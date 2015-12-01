@@ -12,7 +12,7 @@ PATH
   specs:
     linecook (0.0.1)
       activesupport (= 4.2.5)
-      chef-provisioner (= 0.0.3)
+      chef-provisioner (= 0.0.6)
       chefdepartie (= 0.0.5)
       sshkit (= 1.7.1)
 
@@ -61,7 +61,7 @@ GEM
     chef-config (12.5.1)
       mixlib-config (~> 2.0)
       mixlib-shellout (~> 2.0)
-    chef-provisioner (0.0.3)
+    chef-provisioner (0.0.6)
       chef-api (= 0.5.0)
       erubis (= 2.7)
     chef-zero (4.2.3)

@@ -65,9 +65,17 @@ module Linecook
 
     def linecook_host
       @host ||= begin
+
         host_config = Linecook::Config.load_config[:host]
-        host = SSHKit::Host.new("#{host_config[:username]}@#{host_config[:hostname]}")
-        host.password = host_config[:password]
+        host = SSHKit::Host.new(user: host_config[:username], hostname: host_config[:hostname])
+        host.password = host_config[:password] if host_config[:password]
+
+        if host_config[:proxy]
+          ssh_command = "ssh #{host_config[:proxy]} nc %h %p"
+          proxy_cmd = Net::SSH::Proxy::Command.new(ssh_command)
+          host.ssh_options = { proxy: proxy_cmd }
+        end
+
         host
       end
     end

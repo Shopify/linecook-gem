@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.license       = 'MIT'
   s.add_runtime_dependency 'sshkit', ['=1.7.1']
   s.add_runtime_dependency 'chefdepartie', ['=0.0.5']
-  s.add_runtime_dependency 'chef-provisioner', ['=0.0.3']
+  s.add_runtime_dependency 'chef-provisioner', ['=0.0.6']
   s.add_runtime_dependency 'activesupport', ['=4.2.5']
   s.add_development_dependency 'rake', ['=10.4.2']
   s.add_development_dependency 'simplecov', ['=0.10.0']

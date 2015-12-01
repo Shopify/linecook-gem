@@ -12,5 +12,16 @@ module Linecook
         config
       end
     end
+
+    def platform
+      case RbConfig::CONFIG['host_os'].downcase
+      when /linux/
+        'linux'
+      when /darwin/
+        'darwin'
+      else
+        fail 'Linux and OS X are the only supported systems'
+      end
+    end
   end
 end
