@@ -35,7 +35,7 @@ module Linecook
       chef_config.merge!(DEFAULT_CONFIG)
       chef_config.merge!({
         client_key: ChefProvisioner::Config.client_key,
-        chef_server_url: ChefProvisioner::Config.server,
+        chef_server_url: "http://0.0.0.0:#{ChefProvisioner::Config.server.split(':')[-1]}",
       })
 
       Chefdepartie.run(background: true, config: chef_config)
