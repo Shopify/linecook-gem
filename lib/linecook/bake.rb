@@ -1,3 +1,5 @@
+require 'securerandom'
+
 require 'chef-provisioner'
 require 'chefdepartie'
 
@@ -7,9 +9,6 @@ module Linecook
 
   module Baker
     extend self
-    DEFAULT_CONFIG = {
-      node_name: 'linecook-build',
-    }
 
     def bake
       chef_config = setup
@@ -32,13 +31,12 @@ module Linecook
       config = Linecook::Config.load_config
 
       chef_config = config[:chef]
-      chef_config.merge!(DEFAULT_CONFIG)
       chef_config.merge!({
-        client_key: ChefProvisioner::Config.client_key,
+        node_name: "linecook-#{SecureRandom.uuid}",
         chef_server_url: "http://0.0.0.0:#{ChefProvisioner::Config.server.split(':')[-1]}",
       })
 
-      Chefdepartie.run(background: true, config: chef_config)
+      Chefdepartie.run(background: true, config: chef_config, cache: '/tmp/linecook-cache')
       chef_config
     end
   end
