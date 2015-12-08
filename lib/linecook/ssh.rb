@@ -55,15 +55,31 @@ module Linecook
       @proxy = proxy
     end
 
+    def test(check)
+      result = nil
+      on linecook_host do |host|
+        result = test(check)
+      end
+      return result
+    end
+
     def run(command)
       on linecook_host do |host|
         execute(command)
       end
     end
 
+    def capture(command)
+      output = nil
+      on linecook_host do |host|
+        output = capture(command)
+      end
+      return output
+    end
+
     def upload(data, path)
       on linecook_host do |host|
-        contents = StringIO.new(data)
+        contents = File.exists?(data) ? data : StringIO.new(data)
         upload! contents, path
       end
     end

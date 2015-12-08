@@ -17,6 +17,7 @@ PATH
       ipaddress (= 0.8.0)
       octokit (= 4.2.0)
       ruby-progressbar (= 1.7.5)
+      sshkey (= 1.8.0)
       sshkit (= 1.7.1)
       xhyve-ruby (= 0.0.4)
 
@@ -192,6 +193,7 @@ GEM
       net-ssh (~> 2.7)
       net-telnet
       sfl
+    sshkey (1.8.0)
     sshkit (1.7.1)
       colorize (>= 0.7.0)
       net-scp (>= 1.1.2)

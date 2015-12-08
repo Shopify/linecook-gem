@@ -1,8 +1,9 @@
+require 'sshkey'
+
 require 'linecook/lxc'
 # Make Builder a superclass
 # With linux and OS X subclasses
 #
-# - expose the address of the builder
 # - list all LXC builds inside of the builder
 # - upload images to the builder
 # - store state
@@ -46,6 +47,16 @@ module Linecook
 
     def start
       backend.start unless running?
+      ssh.run('sudo stop cgmanager') # FIXME -only on linux, needed for os x?
+      setup_bridge
+      #pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key # FIXME - be able to generate a one off
+      #@ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
+      #@ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
+    end
+
+    def ssh
+      config = Linecook::Config.load_config[:builder]
+      @ssh ||= SSH.new(ip, username: config[:username], password: config[:password])
     end
 
     def stop
@@ -57,6 +68,23 @@ module Linecook
     end
 
   private
+
+    def setup_bridge
+      interfaces = <<-eos
+auto lo
+iface lo inet loopback
+
+auto lxcbr0
+iface lxcbr0 inet dhcp
+        bridge_ports eth0
+        bridge_fd 0
+        bridge_maxwait 0
+eos
+      ssh.upload(interfaces, '/tmp/interfaces')
+      ssh.run('sudo mv /tmp/interfaces /etc/network/interfaces')
+      ssh.run('sudo ifup lxcbr0')
+    end
+
 
     def backend_for_platform
       case Config.platform

@@ -8,14 +8,16 @@ module Linecook
   module Lxc
     class Container
       attr_reader :config
-
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
-        @config = Linecook::Lxc::Config.generate(utsname: name, rootfs: File.join(home, name, 'rootfs'), network: {type: 'veth', flags: 'up', link: 'lxcbr0'}) # FIXME read link from config
-        @source_image = Linecook::ImageFetcher.fetch(image || Linecook::Config.load_config[:images][:base_image])
         @remote = remote == :local ? false : remote
+        config = { utsname: name, rootfs: File.join(home, name, 'rootfs') }
+        config.merge!({ network: {type: 'veth', flags: 'up', link: 'lxcbr0'} }) if @remote
+        @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
+        @source_image = Linecook::ImageFetcher.fetch(image || Linecook::Config.load_config[:images][:base_image])
         @name = name
         @home = home
         setup_dirs
+        setup_image
       end
 
       def start
@@ -37,7 +39,7 @@ module Linecook
           attempt += 1
           sleep(1)
         end
-        info[:ip].find{ |ip| IPAddress("#{my_ip}/24").include?(IPAddress(ip))}
+        info[:ip].is_a?(Array) ? info[:ip].find{ |ip| IPAddress("#{my_ip}/24").include?(IPAddress(ip))} : info[:ip]
       end
 
       def running?
@@ -70,13 +72,15 @@ module Linecook
 
       def write_config
         path = if @remote
+          @remote.upload(@config, '/tmp/lxc-config')
+          '/tmp/lxc-config'
         else
           file = Tempfile.new('lxc-config')
           file.write(@config)
           file.close
           file.path
         end
-        execute("cp #{path} #{File.join(@home, @name, 'config')}")
+        execute("mv #{path} #{File.join(@home, @name, 'config')}")
       end
 
       def mount
@@ -84,7 +88,7 @@ module Linecook
         execute("mkdir -p #{@overlay}")
         execute("mkdir -p #{@lower_dir}")
         execute("mkdir -p #{@upper_base}")
-        execute("mount -o loop #{@source_image} #{@lower_dir}")
+        execute("mount -o loop #{@image_path} #{@lower_dir}")
         execute("mount -t tmpfs tmpfs -o noatime #{@upper_base}") # FIXME - don't always be tmpfs
         execute("mkdir -p #{@work_dir}")
         execute("mkdir -p #{@upper_dir}")
@@ -103,6 +107,15 @@ module Linecook
         Socket.ip_address_list.find{|x| x.ipv4? && !x.ipv4_loopback? && !x.ip_address.start_with?('169.254')}.ip_address
       end
 
+      def setup_image
+        if @remote
+          dest = "#{File.basename(@source_image)}"
+          @remote.upload(@source_image, dest) unless @remote.test("[ -f #{dest} ]")
+          @image_path = dest
+        else
+          @image_path = @source_image
+        end
+      end
 
       def tmpdir(label: 'tmp')
         "/tmp/#{@name}-#{label}"
@@ -119,7 +132,11 @@ module Linecook
       def execute(command, sudo: true, capture: false)
         command = "sudo #{command}" if sudo
         if @remote
-          # ssh
+          if capture
+            return @remote.capture(command)
+          else
+            @remote.run(command)
+          end
         else
           if capture
             return `#{command}`
