@@ -46,8 +46,15 @@ module Linecook
     end
   end
 
-  module SSH
-    extend self
+  class SSH
+
+    def initialize(hostname, username: 'ubuntu', password: nil,  proxy: nil)
+      @username = username
+      @password = password
+      @hostname = hostname
+      @proxy = proxy
+    end
+
     def run(command)
       on linecook_host do |host|
         execute(command)
@@ -63,15 +70,19 @@ module Linecook
 
   private
 
+    # in a thread:
+    #Net::SSH.start( 'host' ) do |session|
+    #  session.forward.local( 1234, 'www.google.com', 80 )
+    #  session.loop
+    #end
     def linecook_host
       @host ||= begin
 
-        host_config = Linecook::Config.load_config[:host]
-        host = SSHKit::Host.new(user: host_config[:username], hostname: host_config[:hostname])
-        host.password = host_config[:password] if host_config[:password]
+        host = SSHKit::Host.new(user: @username , hostname: @hostname)
+        host.password = @password if @password
 
-        if host_config[:proxy]
-          ssh_command = "ssh #{host_config[:proxy]} nc %h %p"
+        if @proxy
+          ssh_command = "ssh #{@proxy[:username]}@#{@proxy[:hostname]} nc %h %p"
           proxy_cmd = Net::SSH::Proxy::Command.new(ssh_command)
           host.ssh_options = { proxy: proxy_cmd }
         end

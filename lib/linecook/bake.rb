@@ -19,9 +19,10 @@ module Linecook
           run_list: chef_config[:run_list],
         },
       )
-      puts "Connecting to host..."
-      SSH::upload(script, '/tmp/chef_bootstrap')
-      SSH::run('sudo bash /tmp/chef_bootstrap')
+      # Instantiate builder and build here
+      #puts "Connecting to host..."
+      #SSH::upload(script, '/tmp/chef_bootstrap')
+      #SSH::run('sudo bash /tmp/chef_bootstrap')
     end
 
   private

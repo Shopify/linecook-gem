@@ -1,0 +1,11 @@
+lxc.include=/usr/share/lxc/config/ubuntu.common.conf
+lxc.aa_profile=lxc-container-default-with-nesting
+lxc.arch=x86.64
+lxc.utsname=linecook
+lxc.rootfs=/u/lxc/linecook/rootfs
+lxc.network.type=veth
+lxc.network.flags=up
+lxc.network.link=br0
+lxc.mount.auto=cgroup
+lxc.cgroup.devices.allow=b 7:* rwm
+lxc.cgroup.devices.allow=c 10:237 rwm
