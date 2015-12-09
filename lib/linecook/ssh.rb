@@ -55,6 +55,14 @@ module Linecook
       @proxy = proxy
     end
 
+    def forward(local, remote:nil)
+      remote ||= local
+      @forwarded = Net::SSH.start(@hostname, @username, password: @password)
+      @forwarded.forward.remote( local, '127.0.0.1', remote)
+      @forwarded.loop { !@forwarded.forward.active_remotes.include?([remote, '127.0.0.1']) }
+      @forwarded
+    end
+
     def test(check)
       result = nil
       on linecook_host do |host|
@@ -86,11 +94,7 @@ module Linecook
 
   private
 
-    # in a thread:
-    #Net::SSH.start( 'host' ) do |session|
-    #  session.forward.local( 1234, 'www.google.com', 80 )
-    #  session.loop
-    #end
+
     def linecook_host
       @host ||= begin
 

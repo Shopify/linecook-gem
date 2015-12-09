@@ -110,7 +110,6 @@ module Linecook
 
       def setup_image
         @source_path = Linecook::ImageFetcher.fetch(@source_image)
-        puts @source_path
         if @remote
           dest = "#{File.basename(@source_path)}"
           @remote.upload(@source_path, dest) unless @remote.test("[ -f #{dest} ]")
