@@ -24,6 +24,8 @@ module Linecook
         mount_all
         write_config
         execute("lxc-start #{container_str} -d")
+        # Don't start a cgmanager if we're already in a container
+        execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager') if lxc?
         unmount unless running?
       end
 
@@ -62,6 +64,11 @@ module Linecook
       end
 
       private
+
+      def lxc?
+        namespaces = capture('cat /proc/1/cgroup').lines.map{ |l| l.strip.split(':').last }.uniq
+        namespaces.length != 1 || namespaces.first != '/'
+      end
 
       def setup_dirs
         @lower_dir = tmpdir(label: 'lower')

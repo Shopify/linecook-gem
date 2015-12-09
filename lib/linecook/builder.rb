@@ -38,12 +38,8 @@ module Linecook
     def start
       return if running?
       backend.start
-      ssh.run('sudo stop cgmanager') # FIXME: -only on linux, needed for os x?
       setup_ssh
       setup_bridge
-
-      # FIXME - be able to generate a one off
-      # FIXME - where is the best place to do this? Is this it?
     end
 
     def ssh
