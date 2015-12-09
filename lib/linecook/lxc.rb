@@ -11,16 +11,16 @@ module Linecook
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
         @remote = remote == :local ? false : remote
         config = { utsname: name, rootfs: File.join(home, name, 'rootfs') }
-        config.merge!({ network: {type: 'veth', flags: 'up', link: 'lxcbr0'} }) if @remote
+        config.merge!({ network: {type: 'veth', flags: 'up', link: 'lxcbr0'} }) if @remote # FIXME
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
-        @source_image = Linecook::ImageFetcher.fetch(image || Linecook::Config.load_config[:images][:base_image])
+        @source_image = image || Linecook::Config.load_config[:images][:base_image]
         @name = name
         @home = home
-        setup_dirs
-        setup_image
       end
 
       def start
+        setup_image
+        setup_dirs
         mount
         write_config
         execute("lxc-start #{container_str} -d")
@@ -28,6 +28,7 @@ module Linecook
       end
 
       def stop
+        setup_dirs
         execute("lxc-stop #{container_str} -k")
         unmount
       end
@@ -108,12 +109,14 @@ module Linecook
       end
 
       def setup_image
+        @source_path = Linecook::ImageFetcher.fetch(@source_image)
+        puts @source_path
         if @remote
-          dest = "#{File.basename(@source_image)}"
-          @remote.upload(@source_image, dest) unless @remote.test("[ -f #{dest} ]")
+          dest = "#{File.basename(@source_path)}"
+          @remote.upload(@source_path, dest) unless @remote.test("[ -f #{dest} ]")
           @image_path = dest
         else
-          @image_path = @source_image
+          @image_path = @source_path
         end
       end
 

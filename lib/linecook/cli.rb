@@ -24,10 +24,26 @@ class Builder < Thor
   end
 end
 
+class Build < Thor
+
+  desc 'list', 'Show all builds'
+  def list
+    puts Linecook::Builder.builds
+  end
+
+  desc 'info', 'Show build info' # FIXME accept the build name
+  def info
+    puts Linecook::Builder.build_info
+  end
+end
+
 class Linecook::CLI < Thor
 
   desc 'builder SUBCOMMAND', 'Manage builders'
   subcommand 'builder', Builder
+
+  desc 'build SUBCOMMAND', 'Manage builds'
+  subcommand 'build', Build
 
   desc 'bake', 'Bake a new image'
   def bake

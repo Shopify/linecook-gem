@@ -1,7 +1,11 @@
+require 'forwardable'
 require 'linecook/builder'
 
 module Linecook
   class Build
+    extend Forwardable
+
+    def_instance_delegators :@container, :stop, :ip, :info
 
     def initialize(name, image)
       @builder = Linecook::Builder
@@ -11,12 +15,8 @@ module Linecook
     end
 
     def start
+      @builder.start
       @container.start
     end
-
-    def stop
-      @container.stop
-    end
-
   end
 end
