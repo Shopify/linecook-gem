@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'sshkey', ['=1.8.0']
   s.add_runtime_dependency 'octokit', ['=4.2.0']
   s.add_runtime_dependency 'chefdepartie', ['=0.0.7']
-  s.add_runtime_dependency 'chef-provisioner', ['=0.1.1']
+  s.add_runtime_dependency 'chef-provisioner', ['=0.1.2']
   s.add_runtime_dependency 'activesupport', ['=4.2.5']
   s.add_runtime_dependency 'ruby-progressbar', ['=1.7.5']
   s.add_runtime_dependency 'ipaddress', ['=0.8.0']

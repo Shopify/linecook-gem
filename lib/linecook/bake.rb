@@ -22,22 +22,28 @@ module Linecook
       puts "Establishing connection to build..."
       build = Linecook::Build.new('test', 'ubuntu-base.squashfs')
       build.start
+      build.ssh.forward(chef_port)
       build.ssh.upload(script, '/tmp/chef_bootstrap')
       build.ssh.run('sudo bash /tmp/chef_bootstrap')
+      build.ssh.stop_forwarding
     end
 
     private
 
     def setup
-      ChefProvisioner::Config.setup(client: 'linecook')
+      ChefProvisioner::Config.setup(client: 'linecook', listen: 'localhost')
       config = Linecook::Config.load_config
 
       chef_config = config[:chef]
       chef_config.merge!(node_name: "linecook-#{SecureRandom.uuid}",
-                         chef_server_url: "http://0.0.0.0:#{ChefProvisioner::Config.server.split(':')[-1]}")
+                         chef_server_url: ChefProvisioner::Config.server)
       # FIXME: sort out cache copying here for concurrent builds of different refs
       Chefdepartie.run(background: true, config: chef_config, cache: '/tmp/linecook-cache')
       chef_config
+    end
+
+    def chef_port
+      ChefProvisioner::Config.server.split(':')[-1].to_i
     end
   end
 end
