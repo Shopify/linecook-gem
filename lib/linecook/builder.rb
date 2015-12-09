@@ -21,6 +21,7 @@ require 'linecook/linux_backend'
 #  - copy base image into xhyve cache
 
 # One linecook instance per build, but many linecook instances can share a single builder
+# FIXME: How to deal with concurrent builds on different branches / revisions?
 
 module Linecook
   module Builder
@@ -38,10 +39,11 @@ module Linecook
       return if running?
       backend.start
       ssh.run('sudo stop cgmanager') # FIXME: -only on linux, needed for os x?
+      setup_ssh
       setup_bridge
-      # pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key # FIXME - be able to generate a one off
-      # @ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
-      # @ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
+
+      # FIXME - be able to generate a one off
+      # FIXME - where is the best place to do this? Is this it?
     end
 
     def ssh
@@ -62,6 +64,12 @@ module Linecook
     end
 
     private
+
+    def setup_ssh
+      pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key
+      ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
+      ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
+    end
 
     def setup_bridge
       interfaces = <<-eos

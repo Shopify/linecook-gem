@@ -21,7 +21,7 @@ module Linecook
       def start
         setup_image
         setup_dirs
-        mount
+        mount_all
         write_config
         execute("lxc-start #{container_str} -d")
         unmount unless running?
@@ -84,16 +84,20 @@ module Linecook
         execute("mv #{path} #{File.join(@home, @name, 'config')}")
       end
 
-      def mount
+      def mount_all
         # Prepare an overlayfs
         execute("mkdir -p #{@overlay}")
         execute("mkdir -p #{@lower_dir}")
         execute("mkdir -p #{@upper_base}")
-        execute("mount -o loop #{@image_path} #{@lower_dir}")
-        execute("mount -t tmpfs tmpfs -o noatime #{@upper_base}") # FIXME: - don't always be tmpfs
+        mount(@image_path, @lower_dir, options: '-o loop')
+        mount('tmpfs', @lower_dir, type: '-t tmpfs', options:'-o noatime') # FIXME: - don't always be tmpfs
         execute("mkdir -p #{@work_dir}")
         execute("mkdir -p #{@upper_dir}")
-        execute("mount -t overlay overlay -o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir} #{@overlay}")
+        mount('overlay', @overlay, type: '-t overlay', options: "-o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir}")
+      end
+
+      def mount(source, dest, type: '', options:'')
+        execute("grep -q #{dest} /etc/mtab || sudo mount #{type} #{options} #{source} #{dest}")
       end
 
       def unmount

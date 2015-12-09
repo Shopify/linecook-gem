@@ -1,5 +1,7 @@
 require 'sshkit'
 require 'sshkit/dsl'
+require 'net/ssh'
+require 'net/ssh/proxy/command'
 
 require 'linecook/config'
 
@@ -46,6 +48,8 @@ module Linecook
   end
 
   class SSH
+
+    attr_reader :username, :hostname
     def initialize(hostname, username: 'ubuntu', password: nil, proxy: nil)
       @username = username
       @password = password
@@ -109,7 +113,7 @@ module Linecook
         host.password = @password if @password
 
         if @proxy
-          ssh_command = "ssh #{@proxy[:username]}@#{@proxy[:hostname]} nc %h %p"
+          ssh_command = "ssh #{@proxy.username}@#{@proxy.hostname} nc %h %p"
           proxy_cmd = Net::SSH::Proxy::Command.new(ssh_command)
           host.ssh_options = { proxy: proxy_cmd }
         end
