@@ -57,10 +57,20 @@ module Linecook
 
     def forward(local, remote:nil)
       remote ||= local
-      @forwarded = Net::SSH.start(@hostname, @username, password: @password)
-      @forwarded.forward.remote( local, '127.0.0.1', remote)
-      @forwarded.loop { !@forwarded.forward.active_remotes.include?([remote, '127.0.0.1']) }
-      @forwarded
+      @session = Net::SSH.start(@hostname, @username, password: @password)
+      @session.forward.remote( local, '127.0.0.1', remote)
+      # Block to ensure it's open
+      @session.loop { !@session.forward.active_remotes.include?([remote, '127.0.0.1']) }
+      @keep_forwarding = true
+      @forward = Thread.new do
+        @session.loop(0.1){ @keep_forwarding }
+      end
+    end
+
+    def stop_forwarding
+      @keep_forwarding = false
+      @forward.join
+      @session.close unless @session.closed?
     end
 
     def test(check)
