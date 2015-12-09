@@ -37,7 +37,7 @@ module Linecook
     def download(url, path)
       FileUtils.mkdir_p(File.dirname(path))
       File.open(path, 'w') do |f|
-        pbar = ProgressBar.create(title: fname, total: nil)
+        pbar = ProgressBar.create(title: File.basename(path), total: nil)
         IO.copy_stream(open(url,
                             content_length_proc: lambda do|t|
                               pbar.total = t if t && 0 < t
