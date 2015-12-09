@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.executables = 'linecook'
   s.homepage    =
     'http://rubygems.org/gems/linecook'
-  s.license       = 'MIT'
+  s.license = 'MIT'
   s.add_runtime_dependency 'xhyve-ruby', ['=0.0.4']
   s.add_runtime_dependency 'sshkit', ['=1.7.1']
   s.add_runtime_dependency 'sshkey', ['=1.8.0']

@@ -2,7 +2,6 @@ require 'thor'
 require 'linecook'
 
 class Builder < Thor
-
   desc 'info', 'Show builder info'
   def info
     puts Linecook::Builder.info
@@ -25,20 +24,18 @@ class Builder < Thor
 end
 
 class Build < Thor
-
   desc 'list', 'Show all builds'
   def list
     puts Linecook::Builder.builds
   end
 
-  desc 'info', 'Show build info' # FIXME accept the build name
+  desc 'info', 'Show build info' # FIXME: accept the build name
   def info
     puts Linecook::Builder.build_info
   end
 end
 
 class Linecook::CLI < Thor
-
   desc 'builder SUBCOMMAND', 'Manage builders'
   subcommand 'builder', Builder
 
@@ -55,5 +52,4 @@ class Linecook::CLI < Thor
   def fetch(name)
     Linecook::ImageFetcher.fetch(name)
   end
-
 end

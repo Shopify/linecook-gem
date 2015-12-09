@@ -1,7 +1,6 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 RSpec.describe Linecook::Builder do
-
   context 'linux_backend' do
     it 'gets a backend' do
       expect(Linecook::Builder.backend).to_not be_nil

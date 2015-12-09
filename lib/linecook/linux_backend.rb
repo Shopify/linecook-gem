@@ -10,7 +10,7 @@ module Linecook
       Linecook::Lxc::Container.new(name: config[:name], home: config[:home], image: images[config[:image]])
     end
 
-  private
+    private
 
     # FIXME: move to dependency check during initial setup if on linux
     def check_lxc_version

@@ -23,7 +23,6 @@ require 'linecook/linux_backend'
 # One linecook instance per build, but many linecook instances can share a single builder
 
 module Linecook
-
   module Builder
     extend self
     extend Forwardable
@@ -38,11 +37,11 @@ module Linecook
     def start
       return if running?
       backend.start
-      ssh.run('sudo stop cgmanager') # FIXME -only on linux, needed for os x?
+      ssh.run('sudo stop cgmanager') # FIXME: -only on linux, needed for os x?
       setup_bridge
-      #pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key # FIXME - be able to generate a one off
-      #@ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
-      #@ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
+      # pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key # FIXME - be able to generate a one off
+      # @ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
+      # @ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
     end
 
     def ssh
@@ -51,7 +50,7 @@ module Linecook
     end
 
     def builds
-      ssh.test("[ -d #{BUILD_HOME} ]") ? ssh.capture("find  #{BUILD_HOME} -maxdepth 1 -mindepth 1 -type d -printf \"%f\n\"").gsub(';', '').lines : []
+      ssh.test("[ -d #{BUILD_HOME} ]") ? ssh.capture("find  #{BUILD_HOME} -maxdepth 1 -mindepth 1 -type d -printf \"%f\n\"").delete(';').lines : []
     end
 
     def build_info
@@ -62,7 +61,7 @@ module Linecook
       info
     end
 
-  private
+    private
 
     def setup_bridge
       interfaces = <<-eos
@@ -79,7 +78,6 @@ eos
       ssh.run('sudo mv /tmp/interfaces /etc/network/interfaces')
       ssh.run('sudo ifup lxcbr0')
     end
-
 
     def backend_for_platform
       case Config.platform

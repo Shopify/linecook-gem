@@ -1,16 +1,22 @@
-* Specs
-* Local and remote LXC config
- * Parse out IP addresses from LXC-info
- * Set up overlay
+* More specs, better coverage
+* Better error handling
+ * Check if builds already running, etc
 * SSH proxy chefdepartie listening on localhost, for security
+ * Proxy itself is done
+ * Only listen on local host on both ends (may need to patch for this)
+ * Test this
+* End-to-end build
 * Add warning to xhyve install citing github issue for code signing
+* Xhyve builder, builder refactor
+ * Clearly define builder interface
+  * start, stop, running?, ip... others?
 * Figure out config file format, fix up config class
- * Copy a default config into linecook home
  * Sources for images
  * Memory to commit
  * disk space to commit
 * Have chefdepartie use linecook home as cookbook cache
 * Figure out linecook commands
+ * Write out what the CLI should look like
  * Something to snapshot current state, save it back
  * List all images
   * Base, then anything built on top

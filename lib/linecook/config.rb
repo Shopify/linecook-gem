@@ -6,7 +6,7 @@ module Linecook
     extend self
     attr_reader :config
 
-    CONFIG_PATH = File.join(Dir.pwd, 'linecook.yml').freeze #File.expand_path('../../../config/config.yml', __FILE__)
+    CONFIG_PATH = File.join(Dir.pwd, 'linecook.yml').freeze # File.expand_path('../../../config/config.yml', __FILE__)
     LINECOOK_HOME = File.expand_path('~/.linecook').freeze
     DEFAULT_CONFIG_PATH = File.join(LINECOOK_HOME, 'config.yml').freeze
     DEFAULT_CONFIG = {
@@ -15,7 +15,7 @@ module Linecook
         name: 'builder',
         home: '/u/lxc',
         username: 'ubuntu',
-        password: 'ubuntu',
+        password: 'ubuntu'
       },
       images: {
         live_iso: 'livesys.iso',
@@ -26,15 +26,15 @@ module Linecook
 
     def setup
       FileUtils.mkdir_p(LINECOOK_HOME)
-      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG)) unless File.exists?(DEFAULT_CONFIG_PATH)
+      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG)) unless File.exist?(DEFAULT_CONFIG_PATH)
     end
 
     def load_config
       @config ||= begin
-        config = YAML.load(File.read(DEFAULT_CONFIG_PATH)) if File.exists?(DEFAULT_CONFIG_PATH)
-        config.merge!(YAML.load(File.read(CONFIG_PATH))) if File.exists?(CONFIG_PATH)
-        #fail "Cookbook path not provided or doesn't exist" unless (config[:chef][:cookbook_path] && Dir.exists?(config[:chef][:cookbook_path]))
-        #fail "Databag secret not provided or doesn't exist" unless (config[:chef][:encrypted_data_bag_secret] && File.exists?(config[:chef][:encrypted_data_bag_secret]))
+        config = YAML.load(File.read(DEFAULT_CONFIG_PATH)) if File.exist?(DEFAULT_CONFIG_PATH)
+        config.merge!(YAML.load(File.read(CONFIG_PATH))) if File.exist?(CONFIG_PATH)
+        # fail "Cookbook path not provided or doesn't exist" unless (config[:chef][:cookbook_path] && Dir.exists?(config[:chef][:cookbook_path]))
+        # fail "Databag secret not provided or doesn't exist" unless (config[:chef][:encrypted_data_bag_secret] && File.exists?(config[:chef][:encrypted_data_bag_secret]))
         (config || {}).deep_symbolize_keys
       end
     end
@@ -53,4 +53,3 @@ module Linecook
     setup
   end
 end
-

@@ -5,7 +5,6 @@ require 'linecook/config'
 
 module Linecook
   class SSHKit::Formatter::Linecook < SSHKit::Formatter::Pretty
-
     def write_command(command)
       log_command_start(command) unless command.started?
       log_command_stdout(command) unless command.stdout.empty?
@@ -41,14 +40,13 @@ module Linecook
 
     def print(command, state, message)
       line = "[#{command.host.to_s.colorize(:blue)}][#{state}] #{message}"
-      line << ?\n unless line.end_with?(?\n)
+      line << "\n" unless line.end_with?("\n")
       original_output << line
     end
   end
 
   class SSH
-
-    def initialize(hostname, username: 'ubuntu', password: nil,  proxy: nil)
+    def initialize(hostname, username: 'ubuntu', password: nil, proxy: nil)
       @username = username
       @password = password
       @hostname = hostname
@@ -58,12 +56,12 @@ module Linecook
     def forward(local, remote:nil)
       remote ||= local
       @session = Net::SSH.start(@hostname, @username, password: @password)
-      @session.forward.remote( local, '127.0.0.1', remote)
+      @session.forward.remote(local, '127.0.0.1', remote)
       # Block to ensure it's open
       @session.loop { !@session.forward.active_remotes.include?([remote, '127.0.0.1']) }
       @keep_forwarding = true
       @forward = Thread.new do
-        @session.loop(0.1){ @keep_forwarding }
+        @session.loop(0.1) { @keep_forwarding }
       end
     end
 
@@ -75,40 +73,39 @@ module Linecook
 
     def test(check)
       result = nil
-      on linecook_host do |host|
+      on linecook_host do |_host|
         result = test(check)
       end
-      return result
+      result
     end
 
     def run(command)
-      on linecook_host do |host|
+      on linecook_host do |_host|
         execute(command)
       end
     end
 
     def capture(command)
       output = nil
-      on linecook_host do |host|
+      on linecook_host do |_host|
         output = capture(command)
       end
-      return output
+      output
     end
 
     def upload(data, path)
-      on linecook_host do |host|
-        contents = File.exists?(data) ? data : StringIO.new(data)
+      on linecook_host do |_host|
+        contents = File.exist?(data) ? data : StringIO.new(data)
         upload! contents, path
       end
     end
 
-  private
-
+    private
 
     def linecook_host
       @host ||= begin
 
-        host = SSHKit::Host.new(user: @username , hostname: @hostname)
+        host = SSHKit::Host.new(user: @username, hostname: @hostname)
         host.password = @password if @password
 
         if @proxy

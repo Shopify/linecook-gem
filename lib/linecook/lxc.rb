@@ -11,7 +11,7 @@ module Linecook
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
         @remote = remote == :local ? false : remote
         config = { utsname: name, rootfs: File.join(home, name, 'rootfs') }
-        config.merge!({ network: {type: 'veth', flags: 'up', link: 'lxcbr0'} }) if @remote # FIXME
+        config.merge!(network: { type: 'veth', flags: 'up', link: 'lxcbr0' }) if @remote # FIXME
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
         @source_image = image || Linecook::Config.load_config[:images][:base_image]
         @name = name
@@ -40,7 +40,7 @@ module Linecook
           attempt += 1
           sleep(1)
         end
-        info[:ip].is_a?(Array) ? info[:ip].find{ |ip| IPAddress("#{my_ip}/24").include?(IPAddress(ip))} : info[:ip]
+        info[:ip].is_a?(Array) ? info[:ip].find { |ip| IPAddress("#{my_ip}/24").include?(IPAddress(ip)) } : info[:ip]
       end
 
       def running?
@@ -61,7 +61,7 @@ module Linecook
         @info
       end
 
-    private
+      private
 
       def setup_dirs
         @lower_dir = tmpdir(label: 'lower')
@@ -73,13 +73,13 @@ module Linecook
 
       def write_config
         path = if @remote
-          @remote.upload(@config, '/tmp/lxc-config')
-          '/tmp/lxc-config'
-        else
-          file = Tempfile.new('lxc-config')
-          file.write(@config)
-          file.close
-          file.path
+                 @remote.upload(@config, '/tmp/lxc-config')
+                 '/tmp/lxc-config'
+               else
+                 file = Tempfile.new('lxc-config')
+                 file.write(@config)
+                 file.close
+                 file.path
         end
         execute("mv #{path} #{File.join(@home, @name, 'config')}")
       end
@@ -90,7 +90,7 @@ module Linecook
         execute("mkdir -p #{@lower_dir}")
         execute("mkdir -p #{@upper_base}")
         execute("mount -o loop #{@image_path} #{@lower_dir}")
-        execute("mount -t tmpfs tmpfs -o noatime #{@upper_base}") # FIXME - don't always be tmpfs
+        execute("mount -t tmpfs tmpfs -o noatime #{@upper_base}") # FIXME: - don't always be tmpfs
         execute("mkdir -p #{@work_dir}")
         execute("mkdir -p #{@upper_dir}")
         execute("mount -t overlay overlay -o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir} #{@overlay}")
@@ -105,7 +105,7 @@ module Linecook
       end
 
       def my_ip
-        Socket.ip_address_list.find{|x| x.ipv4? && !x.ipv4_loopback? && !x.ip_address.start_with?('169.254')}.ip_address
+        Socket.ip_address_list.find { |x| x.ipv4? && !x.ipv4_loopback? && !x.ip_address.start_with?('169.254') }.ip_address
       end
 
       def setup_image
@@ -160,16 +160,16 @@ module Linecook
         network: {
           type: 'veth',
           flags: 'up',
-          link: 'br0',
+          link: 'br0'
         },
         mount: {
-          auto: 'cgroup',
+          auto: 'cgroup'
         },
         cgroup: {
           devices: {
             allow: [
               'b 7:* rwm',
-              'c 10:237 rwm',
+              'c 10:237 rwm'
             ]
           }
         }
@@ -177,7 +177,7 @@ module Linecook
 
       def generate(**kwargs)
         cfg = []
-        flatten(DEFAULT_LXC_CONFIG.merge(kwargs || {})).each do |k,v|
+        flatten(DEFAULT_LXC_CONFIG.merge(kwargs || {})).each do |k, v|
           [v].flatten.each do |val|
             cfg << "lxc.#{k}=#{val}"
           end
@@ -185,12 +185,13 @@ module Linecook
         cfg.join("\n")
       end
 
-    private
+      private
+
       def flatten(hash)
         flattened = {}
-        hash.each do |k,v|
+        hash.each do |k, v|
           if v.is_a?(Hash)
-            flatten(v).each do |key,val|
+            flatten(v).each do |key, val|
               flattened["#{k}.#{key}"] = val
             end
           else
@@ -202,4 +203,3 @@ module Linecook
     end
   end
 end
-
