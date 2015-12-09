@@ -54,12 +54,14 @@ module Linecook
       @username = username
       @password = password
       @hostname = hostname
-      @proxy = proxy
+      @proxy = proxy_command(proxy) if proxy
     end
 
     def forward(local, remote:nil)
       remote ||= local
-      @session = Net::SSH.start(@hostname, @username, password: @password)
+      opts = { password: @password }
+      opts.merge!({ proxy: @proxy }) if @proxy
+      @session = Net::SSH.start(@hostname, @username, opts)
       @session.forward.remote(local, '127.0.0.1', remote)
       # Block to ensure it's open
       @session.loop { !@session.forward.active_remotes.include?([remote, '127.0.0.1']) }
@@ -111,15 +113,14 @@ module Linecook
 
         host = SSHKit::Host.new(user: @username, hostname: @hostname)
         host.password = @password if @password
-
-        if @proxy
-          ssh_command = "ssh #{@proxy.username}@#{@proxy.hostname} nc %h %p"
-          proxy_cmd = Net::SSH::Proxy::Command.new(ssh_command)
-          host.ssh_options = { proxy: proxy_cmd }
-        end
-
+        host.ssh_options = { proxy: @proxy } if @proxy
         host
       end
+    end
+
+    def proxy_command(proxy)
+      ssh_command = "ssh #{proxy.username}@#{proxy.hostname} nc %h %p"
+      Net::SSH::Proxy::Command.new(ssh_command)
     end
   end
 end

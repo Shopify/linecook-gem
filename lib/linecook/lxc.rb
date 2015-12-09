@@ -69,6 +69,8 @@ module Linecook
         @upper_dir = File.join(@upper_base, '/upper')
         @work_dir = File.join(@upper_base, '/work')
         @overlay = File.join(@home, @name, '/rootfs')
+        @socket_dirs = []
+        (Linecook::Config.load_config[:socket_dirs] ||[]).each{ |sock| @socket_dirs << File.join(@overlay, sock) }
       end
 
       def write_config
@@ -90,10 +92,15 @@ module Linecook
         execute("mkdir -p #{@lower_dir}")
         execute("mkdir -p #{@upper_base}")
         mount(@image_path, @lower_dir, options: '-o loop')
-        mount('tmpfs', @lower_dir, type: '-t tmpfs', options:'-o noatime') # FIXME: - don't always be tmpfs
+        mount('tmpfs', @upper_base, type: '-t tmpfs', options:'-o noatime') # FIXME: - don't always be tmpfs
         execute("mkdir -p #{@work_dir}")
         execute("mkdir -p #{@upper_dir}")
         mount('overlay', @overlay, type: '-t overlay', options: "-o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir}")
+        # Overlayfs doesn't support unix domain sockets
+        @socket_dirs.each do |sock|
+          execute("mkdir -p #{sock}")
+          mount('tmpfs', sock, type: '-t tmpfs', options:'-o noatime')
+        end
       end
 
       def mount(source, dest, type: '', options:'')
@@ -101,6 +108,7 @@ module Linecook
       end
 
       def unmount
+        @socket_dirs.each { |sock| execute("umount #{sock}") }
         execute("umount #{@overlay}")
         execute("umount #{@upper_base}")
         execute("umount #{@lower_dir}")

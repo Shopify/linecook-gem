@@ -67,6 +67,7 @@ module Linecook
 
     def setup_ssh
       pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key
+      config = Linecook::Config.load_config[:builder]
       ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
       ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
     end
