@@ -7,6 +7,7 @@ require 'ipaddress'
 module Linecook
   module Lxc
     class Container
+      MAX_WAIT = 60
       attr_reader :config
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
         @remote = remote == :local ? false : remote
@@ -24,7 +25,7 @@ module Linecook
         mount_all
         write_config
         execute("lxc-start #{container_str} -d")
-        # wait_running # FIXME - poll until it's running, or we can reach a race condition
+        wait_running
         # Don't start a cgmanager if we're already in a container
         execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager || true') if lxc?
         setup_bridge unless @remote
@@ -68,12 +69,17 @@ module Linecook
 
       private
 
+      def wait_running
+        wait_for { running? }
+      end
       def wait_ssh
-        running = false
-        max_attempts = 60
+        wait_for { capture("lxc-attach -n #{@name} -P #{@home} status ssh || true") =~ /running/ }
+      end
+
+      def wait_for
         attempts = 0
-        until running || attempts > max_attempts
-          break if capture("lxc-attach -n #{@name} -P #{@home} status ssh") =~ /running/
+        until attempts > MAX_WAIT
+          break if yield
           attempts += 1
           sleep(1)
         end
