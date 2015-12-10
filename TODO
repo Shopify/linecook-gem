@@ -1,4 +1,5 @@
-* Fix bridge networking
+* Xhyve check for setuid, prompt to fix
+ * Part of setup check if on OS X
 * More specs, better coverage
 * Better error handling
  * Check if builds already running, etc
