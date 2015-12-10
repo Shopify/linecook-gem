@@ -1,22 +1,17 @@
-* Xhyve - wait for ssh
-* LXC - wait for running
-* Figure out why coretemp fails
 * More specs, better coverage
+* Cookbook cache logic
+ * Have chefdepartie use linecook home as cookbook cache
 * Better error handling
  * Check if builds already running, etc
-* End-to-end build
-* Add warning to xhyve install citing github issue for code signing
-* Xhyve builder, builder refactor
- * Clearly define builder interface
-  * start, stop, running?, ip... others?
 * Figure out config file format, fix up config class
  * Sources for images
  * Memory to commit
  * disk space to commit
-* Have chefdepartie use linecook home as cookbook cache
 * Figure out linecook commands
  * Write out what the CLI should look like
  * Something to snapshot current state, save it back
  * List all images
   * Base, then anything built on top
 * Extract /abstract out ubuntuisms
+* Use S3 for images, support pull/push/list
+ * Encrypt contents
