@@ -19,3 +19,4 @@
  * Something to snapshot current state, save it back
  * List all images
   * Base, then anything built on top
+* Extract /abstract out ubuntuisms
