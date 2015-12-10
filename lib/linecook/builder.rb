@@ -39,7 +39,6 @@ module Linecook
       return if running?
       backend.start
       setup_ssh
-      setup_bridge
     end
 
     def ssh
@@ -66,22 +65,6 @@ module Linecook
       config = Linecook::Config.load_config[:builder]
       ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
       ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
-    end
-
-    def setup_bridge
-      interfaces = <<-eos
-auto lo
-iface lo inet loopback
-
-auto lxcbr0
-iface lxcbr0 inet dhcp
-  bridge_ports eth0
-  bridge_fd 0
-  bridge_maxwait 0
-eos
-      ssh.upload(interfaces, '/tmp/interfaces')
-      ssh.run('sudo mv /tmp/interfaces /etc/network/interfaces')
-      ssh.run('sudo ifup lxcbr0')
     end
 
     def backend_for_platform

@@ -1,10 +1,7 @@
+* Fix bridge networking
 * More specs, better coverage
 * Better error handling
  * Check if builds already running, etc
-* SSH proxy chefdepartie listening on localhost, for security
- * Proxy itself is done
- * Only listen on local host on both ends (may need to patch for this)
- * Test this
 * End-to-end build
 * Add warning to xhyve install citing github issue for code signing
 * Xhyve builder, builder refactor

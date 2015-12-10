@@ -11,7 +11,7 @@ module Linecook
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
         @remote = remote == :local ? false : remote
         config = { utsname: name, rootfs: File.join(home, name, 'rootfs') }
-        config.merge!(network: { type: 'veth', flags: 'up', link: 'lxcbr0' }) if @remote # FIXME
+        config.merge!(network: { type: 'veth', flags: 'up', link: 'lxcbr0' }) # FIXME
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
         @source_image = image || Linecook::Config.load_config[:images][:base_image]
         @name = name
@@ -25,7 +25,9 @@ module Linecook
         write_config
         execute("lxc-start #{container_str} -d")
         # Don't start a cgmanager if we're already in a container
-        execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager') if lxc?
+        execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager || true') if lxc?
+        setup_bridge unless @remote
+        wait_ssh
         unmount unless running?
       end
 
@@ -42,7 +44,7 @@ module Linecook
           attempt += 1
           sleep(1)
         end
-        info[:ip].is_a?(Array) ? info[:ip].find { |ip| IPAddress("#{my_ip}/24").include?(IPAddress(ip)) } : info[:ip]
+        info[:ip].is_a?(Array) ? info[:ip].find { |ip| bridge_network.include?(IPAddress(ip)) } : info[:ip]
       end
 
       def running?
@@ -64,6 +66,17 @@ module Linecook
       end
 
       private
+
+      def wait_ssh
+        running = false
+        max_attempts = 60
+        attempts = 0
+        until running || attempts > max_attempts
+          break if capture("lxc-attach -n #{@name} -P #{@home} status ssh") =~ /running/
+          attempts += 1
+          sleep(1)
+        end
+      end
 
       def lxc?
         namespaces = capture('cat /proc/1/cgroup').lines.map{ |l| l.strip.split(':').last }.uniq
@@ -123,9 +136,32 @@ module Linecook
         execute("rmdir #{@upper_base}")
       end
 
-      def my_ip
-        Socket.ip_address_list.find { |x| x.ipv4? && !x.ipv4_loopback? && !x.ip_address.start_with?('169.254') }.ip_address
+      def bridge_network
+        broad_ip = Socket.getifaddrs.find do |a|
+          a.name == 'lxcbr0' && a.broadaddr && a.broadaddr.afamily == 2 && !a.broadaddr.inspect_sockaddr.start_with?('169.254')
+        end.broadaddr.inspect_sockaddr
+        IPAddress("#{broad_ip.to_s}/24")
       end
+
+      def setup_bridge
+        bridge_config = <<-eos
+auto lo
+iface lo inet loopback
+
+auto lxcbr0
+iface lxcbr0 inet dhcp
+  bridge_ports eth0
+  bridge_fd 0
+  bridge_maxwait 0
+eos
+        interfaces = Tempfile.new('interfaces')
+        interfaces.write(bridge_config)
+        interfaces.close
+        execute("mv #{interfaces.path} #{File.join(@home, @name, 'rootfs', 'etc', 'network', 'interfaces')}")
+
+        execute("lxc-attach -n #{@name} -P #{@home} ifup lxcbr0")
+      end
+
 
       def setup_image
         @source_path = Linecook::ImageFetcher.fetch(@source_image)
