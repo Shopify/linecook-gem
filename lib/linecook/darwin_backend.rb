@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'linecook/image'
 # FIXME: read config values from config file
 
@@ -5,7 +6,6 @@ module Linecook
   module OSXBuilder
     extend self
     def backend
-      require 'xhyve'
       XhyveBackend.new
     end
   end
@@ -19,10 +19,11 @@ module Linecook
       spec = load_run_spec
       @pid = spec[:pid]
       @ip = spec[:ip]
+      @uuid = spec[:uuid]
     end
 
     def info
-      {ip: @ip, pid: @pid}
+      {ip: @ip, pid: @pid, uuid: @uuid}
     end
 
     def start
@@ -32,6 +33,9 @@ module Linecook
     def stop
       return false unless @pid
       Process.kill('KILL', @pid)
+      @ip = nil
+      @pid = nil
+      save_run_spec
     end
 
     def running?
@@ -45,12 +49,13 @@ module Linecook
       get_iso
       boot_path = File.join(mount_iso, 'BOOT')
       puts "Starting xhyve guest..."
+      @uuid ||= SecureRandom.uuid
       guest = Xhyve::Guest.new(
           kernel: File.join(boot_path, 'VMLINUZ'),
           initrd: File.join(boot_path, 'INITRD'),
           cmdline: LINUX_CMDLINE,   # boot flags to linux
           #blockdevs: 'loop.img',     # path to img files to use as block devs # FIXME
-          #uuid: 'a-valid-uuid',      # a valid UUID # FIXME
+          uuid: @uuid,
           serial: 'com2',
           memory: '4G', # FIXME
           processors: 1,             # number of processors #FIXME
@@ -58,11 +63,16 @@ module Linecook
           acpi: true,                 # set up acpi? (required for clean shutdown)
           )
       guest.start
-      puts "Started... waiting for network"
+      puts "Started with #{guest.mac}... waiting for network"
       @ip = guest.ip
       @pid = guest.pid
+      unless @ip
+        @guest.kill
+        fail 'Could not acquire ip' 
+      end
       puts "Network acquired, IP is #{@ip}"
       save_run_spec
+      # wait_ssh # FIXME: we need to wait until SSH is actually up or we will sometimes timeout
     end
 
     # get and mount the iso

@@ -24,6 +24,7 @@ module Linecook
         mount_all
         write_config
         execute("lxc-start #{container_str} -d")
+        # wait_running # FIXME - poll until it's running, or we can reach a race condition
         # Don't start a cgmanager if we're already in a container
         execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager || true') if lxc?
         setup_bridge unless @remote

@@ -1,6 +1,8 @@
 require 'yaml'
 require 'fileutils'
 
+require 'xhyve'
+
 module Linecook
   module Config
     extend self
@@ -27,6 +29,17 @@ module Linecook
     def setup
       FileUtils.mkdir_p(LINECOOK_HOME)
       File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG)) unless File.exist?(DEFAULT_CONFIG_PATH)
+      check_perms if platform == 'darwin'
+    end
+
+    def check_perms
+      fix_perms if (File.stat(Xhyve::BINARY_PATH).uid != 0 || !File.stat(Xhyve::BINARY_PATH).setuid?)
+    end
+
+    def fix_perms
+      puts "Xhyve requires root until https://github.com/mist64/xhyve/issues/60 is resolved\nPlease enter your sudo password to setuid on the xhyve binary"
+      system("sudo chown root #{Xhyve::BINARY_PATH}")
+      system("sudo chmod +s #{Xhyve::BINARY_PATH}")
     end
 
     def load_config

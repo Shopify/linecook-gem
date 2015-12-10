@@ -6,7 +6,7 @@ require 'benchmark'
 begin
   ENV['THOR_DEBUG'] = '1'
   etime = Benchmark.realtime { Linecook::CLI.start(ARGV) }
-  puts "Completed in #{etime}s"
+  $stderr.puts "Completed in #{etime}s"
 rescue Thor::UndefinedCommandError, Thor::UnknownArgumentError, Thor::AmbiguousCommandError, Thor::InvocationError => e
   $stderr.puts(e.message)
   exit(64)

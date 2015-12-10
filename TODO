@@ -1,5 +1,6 @@
-* Xhyve check for setuid, prompt to fix
- * Part of setup check if on OS X
+* Xhyve - wait for ssh
+* LXC - wait for running
+* Figure out why coretemp fails
 * More specs, better coverage
 * Better error handling
  * Check if builds already running, etc
