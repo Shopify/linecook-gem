@@ -1,6 +1,5 @@
 * More specs, better coverage
-* Cookbook cache logic
- * Have chefdepartie use linecook home as cookbook cache
+* Actually snapshot images
 * Better error handling
  * Check if builds already running, etc
 * Figure out config file format, fix up config class
