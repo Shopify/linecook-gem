@@ -1,0 +1,59 @@
+.TH LINECOOK 1 "December 2015" Unix "User Manuals"
+.SH NAME
+.PP
+linecook \- system image builder
+.SH SYNOPSIS
+.PP
+linecook help [\fB\fCCOMMAND\fR]\- for specific command help
+.SH DESCRIPTION
+.PP
+Linecook 
+.SH CONFIGURATION
+.PP
+Describe config file here once it's been determined
+.SH FILES
+.TP
+\fI\&./linecook.yml\fP
+Local config file. Gets deep merged over the system config file. If not explicitly specified, found from current directory if exists.
+.TP
+\fI~/linecook/config.yml\fP
+The system wide configuration file, base or 'common' configuration. Other configurations get deep merged on top of this.
+.SH DEPENDENCIES
+.PP
+Ruby 2.0 or greater, gem, and bundler.
+.PP
+Does not work and will never work on Windows.
+.SS Linux
+.PP
+Only tested on Gentoo and Ubuntu
+.RS
+.IP \(bu 2
+lxc >= 1.0.7
+.IP \(bu 2
+brutils
+.IP \(bu 2
+dnsmasq
+.IP \(bu 2
+iptables with masquerade support
+.IP \(bu 2
+Linux 3.19 or greater with support for cgroups, and netfilter as described by lxc and iptables for NAT.
+.RE
+.SS OS X
+.RS
+.IP \(bu 2
+OS X 10.10 or later (Hypervisor.framework required for Xhyve)
+.RE
+.SH QUIRKS
+.RS
+.IP \(bu 2
+Overlayfs doesn't support unix domain sockets (yet), so anything using a unix domain socket outside of the /run tree should do manually symlink to /run.
+.IP \(bu 2
+Config file will allow you to explicitly mount tmpfs over things that don't do /run if you need to create unix domain sockets
+.RE
+.SH BUGS
+.PP
+Report bugs against github.com/dalehamel/linecook
+.SH AUTHOR
+.PP
+Dale Hamel 
+\[la]dale.hamel@srvthe.net\[ra]

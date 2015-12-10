@@ -7,11 +7,15 @@
  * Sources for images
  * Memory to commit
  * disk space to commit
+* Packer support
+ * Carve out chef provisioner logic into it's own module.
+ * Stand-alone chef runs
 * Figure out linecook commands
  * Write out what the CLI should look like
  * Something to snapshot current state, save it back
  * List all images
   * Base, then anything built on top
 * Extract /abstract out ubuntuisms
+* EC2 snapshotting EBS volumes
 * Use S3 for images, support pull/push/list
  * Encrypt contents

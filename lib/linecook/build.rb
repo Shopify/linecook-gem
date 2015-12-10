@@ -15,7 +15,7 @@ module Linecook
     end
 
     def ssh
-      @ssh ||= Linecook::SSH.new(@container.ip, username: 'ubuntu', password: 'ubuntu', proxy: Linecook::Builder.ssh)
+      @ssh ||= Linecook::SSH.new(@container.ip, username: 'ubuntu', password: 'ubuntu', proxy: Linecook::Builder.ssh, keyfile: Linecook::Builder.pemfile)
     end
   end
 end

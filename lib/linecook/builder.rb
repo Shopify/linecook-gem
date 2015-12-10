@@ -29,6 +29,7 @@ module Linecook
     extend Forwardable
     BUILD_HOME = '/u/lxc'
 
+    attr_reader :pemfile
     def_instance_delegators :backend, :stop, :ip, :info, :running?
 
     def backend
@@ -43,7 +44,17 @@ module Linecook
 
     def ssh
       config = Linecook::Config.load_config[:builder]
-      @ssh ||= SSH.new(ip, username: config[:username], password: config[:password])
+      @ssh ||= begin
+        userkey = File.expand_path("~/.ssh/id_rsa")
+        dedicated_key = File.join(Linecook::Config::LINECOOK_HOME, 'linecook_ssh.pem')
+        unless File.exists?(dedicated_key)
+          File.write(dedicated_key, SSHKey.generate.private_key)
+          FileUtils.chmod(0600, dedicated_key)
+        end
+        @pemfile = File.exists?(userkey) ? userkey : dedicated_key
+        puts @pemfile
+        SSH.new(ip, username: config[:username], password: config[:password], keyfile: @pemfile)
+      end
     end
 
     def builds
@@ -61,7 +72,8 @@ module Linecook
     private
 
     def setup_ssh
-      pubkey = SSHKey.new(File.read(File.expand_path("~/.ssh/id_rsa"))).ssh_public_key
+      ssh
+      pubkey = SSHKey.new(File.read(@pemfile)).ssh_public_key
       config = Linecook::Config.load_config[:builder]
       ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
       ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")

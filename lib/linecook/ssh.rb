@@ -50,10 +50,11 @@ module Linecook
   class SSH
 
     attr_reader :username, :hostname
-    def initialize(hostname, username: 'ubuntu', password: nil, proxy: nil)
+    def initialize(hostname, username: 'ubuntu', password: nil, keyfile: nil, proxy: nil)
       @username = username
       @password = password
       @hostname = hostname
+      @keyfile = keyfile
       @proxy = proxy_command(proxy) if proxy
     end
 
@@ -110,16 +111,18 @@ module Linecook
 
     def linecook_host
       @host ||= begin
-
         host = SSHKit::Host.new(user: @username, hostname: @hostname)
         host.password = @password if @password
-        host.ssh_options = { proxy: @proxy } if @proxy
+        opts = {}
+        opts.merge!({ proxy: @proxy }) if @proxy
+        opts.merge!({ keys: [@keyfile], auth_methods: %w(publickey password) }) if @keyfile
+        host.ssh_options = opts
         host
       end
     end
 
     def proxy_command(proxy)
-      ssh_command = "ssh #{proxy.username}@#{proxy.hostname} nc %h %p"
+      ssh_command = "ssh #{"-i #{@keyfile}" if @keyfile} #{proxy.username}@#{proxy.hostname} nc %h %p"
       Net::SSH::Proxy::Command.new(ssh_command)
     end
   end

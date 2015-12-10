@@ -3,14 +3,14 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'linecook/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'linecook'
+  s.name        = 'linecook-gem'
   s.version     = Linecook::VERSION
   s.date        = '2015-11-24'
   s.summary     = 'Build system images using chef zero, LXC, and packer'
   s.description = 'Build and snapshot a system image for distribution, CI, or both using real chef cookbooks and a fake server.'
   s.authors     = ['Dale Hamel']
   s.email       = 'dale.hamel@srvthe.net'
-  s.files       = Dir['lib/**/*']
+  s.files       = Dir['lib/**/*'] + Dir['man/**/*']
   s.executables = 'linecook'
   s.homepage    =
     'http://rubygems.org/gems/linecook'
@@ -27,4 +27,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', ['=10.4.2']
   s.add_development_dependency 'simplecov', ['=0.10.0']
   s.add_development_dependency 'rspec', ['=3.2.0']
+  s.add_development_dependency 'md2man', ['4.0.0']
 end
