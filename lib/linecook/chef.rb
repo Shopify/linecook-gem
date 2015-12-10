@@ -54,6 +54,7 @@ module Linecook
       extend self
 
       def path
+        FileUtils.mkdir_p(CACHE_PATH)
         cache_path = Dir.mktmpdir
         build
         copy(cache_path)

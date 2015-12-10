@@ -7,7 +7,7 @@ linecook \- system image builder
 linecook help [\fB\fCCOMMAND\fR]\- for specific command help
 .SH DESCRIPTION
 .PP
-Linecook 
+Linecook builds system images utilizing overlayfs, squashfs, and linux containers via LXC. Currently, linecook only natively supports chef for provisioning, but using packer with a null resource, any of the mechanisms supported by packer are also supported by linecook.
 .SH CONFIGURATION
 .PP
 Describe config file here once it's been determined
@@ -44,6 +44,13 @@ Linux 3.19 or greater with support for cgroups, and netfilter as described by lx
 OS X 10.10 or later (Hypervisor.framework required for Xhyve)
 .RE
 .SH QUIRKS
+.SS Xhyve
+.RS
+.IP \(bu 2
+Xhyve requires root privileges until 
+\[la]https://github.com/mist64/xhyve/issues/60\[ra] is resolved. Linecook will setuid on the xhyve binary.
+.RE
+.SS Overlayfs
 .RS
 .IP \(bu 2
 Overlayfs doesn't support unix domain sockets (yet), so anything using a unix domain socket outside of the /run tree should do manually symlink to /run.
