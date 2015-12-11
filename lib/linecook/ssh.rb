@@ -107,6 +107,12 @@ module Linecook
       end
     end
 
+    def download(path, local: nil)
+      on linecook_host do |_host|
+        download! path, local || File.basename(path)
+      end
+    end
+
     private
 
     def linecook_host

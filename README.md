@@ -4,10 +4,12 @@ LINECOOK 1 "December 2015" Unix "User Manuals"
 NAME
 ----
 
-linecook - system image builder
+linecook - Linux system image builder
 
 SYNOPSIS
 --------
+
+linecook setup - interactive setup
 
 linecook help [`COMMAND`]- for specific command help
 
@@ -15,6 +17,45 @@ DESCRIPTION
 -----------
 
 Linecook builds system images utilizing overlayfs, squashfs, and linux containers via LXC. Currently, linecook only natively supports chef for provisioning, but using packer with a null resource, any of the mechanisms supported by packer are also supported by linecook.
+
+Linecook is intended to serve 3 main purposes:
+
+* Providing a simple, portable image building process that is useable both in baremetal and cloud deployments.
+* Enabling a means of simple local image development with high production efficacy on Linux and OS X.
+* Simplifying continuous integration and testing of linux systems.
+
+USAGE
+--------
+
+linecook bake SPEC [-n --name `NAME`] [-s --snapshot]
+  --name - The name
+  --snapshot - Snapshot the resulting image for later use
+  --encrypt - Encrypt the snapshot using the configured key. Implies snapshot.
+  --upload - Upload the resulting image to the configured destination. Implies snapshot.
+  --all - Snapshot, encrypt, and upload the resulting image.
+  Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
+
+linecook builder
+  start - start a new builder
+  stop - stop a running builder
+  info - show the info about the builder
+  ip - show the builder's ip
+
+linecook build
+  list
+  info NAME
+  ip NAME
+  stop NAME
+
+linecook image
+  list
+  fetch
+  find [`REGEX`] - list available remote images filtered by an optional regex
+
+linecook ami [`image`] [-r --region `REGION1,REGION2`] [-x --xen-type `PV|HVM`] [-r --root-size GIGABYTES] - create an AMI (Amazon Machine Image) from a snapshot.
+
+
+linecook keygen - generate a new secret key for image encryption
 
 CONFIGURATION
 -------------

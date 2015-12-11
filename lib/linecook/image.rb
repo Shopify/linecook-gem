@@ -7,11 +7,11 @@ require 'ruby-progressbar'
 
 module Linecook
   module ImageFetcher
+    IMAGE_PATH = File.join(Config::LINECOOK_HOME, 'images').freeze
     extend self
 
     def fetch(name, upgrade:false)
-      dir = File.join(Config::LINECOOK_HOME, 'images')
-      path = File.join(dir, name)
+      path = File.join(IMAGE_PATH, name)
       download(image(name)[:browser_download_url], path) unless File.exist?(path) || upgrade
       path
     end

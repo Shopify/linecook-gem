@@ -1,6 +1,9 @@
 require 'securerandom'
 require 'linecook/image'
 # FIXME: read config values from config file
+#  - create cache loopback image
+#   - dd, based on config file.
+
 
 module Linecook
   module OSXBuilder

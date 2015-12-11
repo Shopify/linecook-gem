@@ -1,7 +1,7 @@
 module Linecook
   module LinuxBuilder
     extend self
-    LXC_MIN_VERSION = '1.0.7'
+    LXC_MIN_VERSION = '1.1.4'
 
     def backend
       check_lxc_version

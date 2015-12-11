@@ -4,24 +4,6 @@ require 'sshkey'
 require 'linecook/lxc'
 require 'linecook/darwin_backend'
 require 'linecook/linux_backend'
-#
-# Linux builder:
-#  - just checks for a bridge interface
-#  - download live image, if not already
-#  - sets up lxc container using local lxc config
-#  - copies base image into builder container
-
-# OS X builder:
-#  - download live ISO
-#   - hdiutil
-#  - create cache loopback image
-#   - dd, based on config file.
-#  - start xhyve using gem
-#   - keep track of PID and IP
-#  - copy base image into xhyve cache
-
-# One linecook instance per build, but many linecook instances can share a single builder
-# FIXME: How to deal with concurrent builds on different branches / revisions?
 
 module Linecook
   module Builder
@@ -52,7 +34,6 @@ module Linecook
           FileUtils.chmod(0600, dedicated_key)
         end
         @pemfile = File.exists?(userkey) ? userkey : dedicated_key
-        puts @pemfile
         SSH.new(ip, username: config[:username], password: config[:password], keyfile: @pemfile)
       end
     end

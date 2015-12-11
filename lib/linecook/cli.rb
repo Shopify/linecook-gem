@@ -33,6 +33,13 @@ class Build < Thor
   def info
     puts Linecook::Builder.build_info
   end
+
+  desc 'snapshot NAME', 'Take a snapshot of the build with NAME'
+  method_options name: :string
+  def snapshot(name)
+    build = Linecook::Build.new(name, '')
+    build.snapshot(download: true)
+  end
 end
 
 class Linecook::CLI < Thor

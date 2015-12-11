@@ -8,15 +8,16 @@ module Linecook
   module Lxc
     class Container
       MAX_WAIT = 60
-      attr_reader :config
+      attr_reader :config, :root
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
+        @name = name
+        @home = home
         @remote = remote == :local ? false : remote
-        config = { utsname: name, rootfs: File.join(home, name, 'rootfs') }
+        @root = File.join(@home, @name, 'rootfs')
+        config = { utsname: name, rootfs: @root }
         config.merge!(network: { type: 'veth', flags: 'up', link: 'lxcbr0' }) # FIXME
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
         @source_image = image || Linecook::Config.load_config[:images][:base_image]
-        @name = name
-        @home = home
       end
 
       def start
@@ -95,9 +96,8 @@ module Linecook
         @upper_base = tmpdir(label: 'upper')
         @upper_dir = File.join(@upper_base, '/upper')
         @work_dir = File.join(@upper_base, '/work')
-        @overlay = File.join(@home, @name, '/rootfs')
         @socket_dirs = []
-        (Linecook::Config.load_config[:socket_dirs] ||[]).each{ |sock| @socket_dirs << File.join(@overlay, sock) }
+        (Linecook::Config.load_config[:socket_dirs] ||[]).each{ |sock| @socket_dirs << File.join(@root, sock) }
       end
 
       def write_config
@@ -115,14 +115,14 @@ module Linecook
 
       def mount_all
         # Prepare an overlayfs
-        execute("mkdir -p #{@overlay}")
+        execute("mkdir -p #{@root}")
         execute("mkdir -p #{@lower_dir}")
         execute("mkdir -p #{@upper_base}")
         mount(@image_path, @lower_dir, options: '-o loop')
         mount('tmpfs', @upper_base, type: '-t tmpfs', options:'-o noatime') # FIXME: - don't always be tmpfs
         execute("mkdir -p #{@work_dir}")
         execute("mkdir -p #{@upper_dir}")
-        mount('overlay', @overlay, type: '-t overlay', options: "-o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir}")
+        mount('overlay', @root, type: '-t overlay', options: "-o lowerdir=#{@lower_dir},upperdir=#{@upper_dir},workdir=#{@work_dir}")
         # Overlayfs doesn't support unix domain sockets
         @socket_dirs.each do |sock|
           execute("mkdir -p #{sock}")
@@ -136,7 +136,7 @@ module Linecook
 
       def unmount
         @socket_dirs.each { |sock| execute("umount #{sock}") }
-        execute("umount #{@overlay}")
+        execute("umount #{@root}")
         execute("umount #{@upper_base}")
         execute("umount #{@lower_dir}")
         execute("rmdir #{@lower_dir}")
@@ -164,7 +164,7 @@ eos
         interfaces = Tempfile.new('interfaces')
         interfaces.write(bridge_config)
         interfaces.close
-        execute("mv #{interfaces.path} #{File.join(@home, @name, 'rootfs', 'etc', 'network', 'interfaces')}")
+        execute("mv #{interfaces.path} #{File.join(@root, 'etc', 'network', 'interfaces')}")
 
         execute("lxc-attach -n #{@name} -P #{@home} ifup lxcbr0")
       end
