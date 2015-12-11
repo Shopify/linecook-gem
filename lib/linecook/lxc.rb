@@ -21,14 +21,13 @@ module Linecook
       end
 
       def start
+        return if running?
         setup_image
         setup_dirs
         mount_all
         write_config
         execute("lxc-start #{container_str} -d")
         wait_running
-        # Don't start a cgmanager if we're already in a container
-        execute('[ -f /etc/init/cgmanager.conf ] && sudo status cgmanager | grep -q running && sudo stop cgmanager || true') if lxc?
         setup_bridge unless @remote
         wait_ssh
         unmount unless running?
@@ -60,7 +59,7 @@ module Linecook
 
       def info
         @info = {}
-        capture("lxc-info #{container_str}").lines.each do |line|
+        capture("lxc-info #{container_str} || true").lines.each do |line|
           k, v = line.strip.split(/:\s+/)
           key = k.downcase.to_sym
           @info[key] = @info[key] ? [@info[key]].flatten << v : v
@@ -171,7 +170,7 @@ eos
 
 
       def setup_image
-        @source_path = Linecook::ImageFetcher.fetch(@source_image)
+        @source_path = Linecook::ImageManager.fetch(@source_image)
         if @remote
           dest = "#{File.basename(@source_path)}"
           @remote.upload(@source_path, dest) unless @remote.test("[ -f #{dest} ]")

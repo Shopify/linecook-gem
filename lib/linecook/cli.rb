@@ -57,6 +57,6 @@ class Linecook::CLI < Thor
   desc 'fetch IMAGE_NAME', 'Fetch an image by name'
   method_options name: :string
   def fetch(name)
-    Linecook::ImageFetcher.fetch(name)
+    Linecook::ImageManager.fetch(name)
   end
 end

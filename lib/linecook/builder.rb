@@ -21,7 +21,6 @@ module Linecook
     def start
       return if running?
       backend.start
-      setup_ssh
     end
 
     def ssh
@@ -51,14 +50,6 @@ module Linecook
     end
 
     private
-
-    def setup_ssh
-      ssh
-      pubkey = SSHKey.new(File.read(@pemfile)).ssh_public_key
-      config = Linecook::Config.load_config[:builder]
-      ssh.run("mkdir -p /home/#{config[:username]}/.ssh")
-      ssh.upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
-    end
 
     def backend_for_platform
       case Config.platform

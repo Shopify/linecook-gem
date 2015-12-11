@@ -56,6 +56,7 @@ module Linecook
       @hostname = hostname
       @keyfile = keyfile
       @proxy = proxy_command(proxy) if proxy
+      setup_ssh_key if @keyfile
     end
 
     def forward(local, remote:nil)
@@ -114,6 +115,14 @@ module Linecook
     end
 
     private
+
+    def setup_ssh_key
+      pubkey = SSHKey.new(File.read(@keyfile)).ssh_public_key
+      config = Linecook::Config.load_config[:builder]
+      run("mkdir -p /home/#{config[:username]}/.ssh")
+      upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
+    end
+
 
     def linecook_host
       @host ||= begin

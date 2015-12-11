@@ -1,10 +1,13 @@
 * More specs, better coverage
  * Have a CLI spec that tests every command, in addition to the unit tests.
-* Actually snapshot images
+* Write bootstrapping file
+* Wipe SSH keys before upload
+ * Figure out how to handle login... leave user open?
 * EC2 snapshotting EBS volumes
 * Use S3 for images, support pull/push/list
 * Update linecook cookbook
- * Latest LXC
+ * Set a much higher number of loop devices
+ * http://chee-yang.blogspot.ca/2009/06/linux-increase-number-of-loop-devices.html
 * Better error handling
  * Check if builds already running, etc
 * Figure out config file format, fix up config class
