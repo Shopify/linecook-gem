@@ -152,6 +152,7 @@ module Linecook
           return
         rescue SSHKit::Runner::ExecuteError
           puts "Retrying SSH connection"
+          sleep(5)
           attempts += 1
         end
       end

@@ -39,22 +39,24 @@ module Linecook
     end
 
     def finalize
-      execute("echo \"UUID=$(blkid -o value -s UUID #{@rootdev}) /               ext4            defaults  1 2\" > /tmp/fstab")
+      execute("echo \"UUID=\\\"$(blkid -o value -s UUID #{@rootdev})\\\" /               ext4            defaults  1 2\" > /tmp/fstab")
       execute("mv /tmp/fstab #{@root}/etc/fstab")
       chroot_exec('apt-get update')
       chroot_exec('apt-get install -y --force-yes grub-pc grub-legacy-ec2')
+      chroot_exec('update-grub')
       execute("grub-install --root-directory=#{@root} $(echo #{@rootdev} | sed \"s/[0-9]*//g\")") if @hvm
     end
 
 
     def chroot_exec(command)
-      execute("mount -o bind /dev #{@mountpoint}/dev")
-      execute("mount -o bind /sys #{@mountpoint}/sys")
-      execute("mount -t proc none #{@mountpoint}/proc")
-      execute(command)
-      execute("umount #{@mountpoint}/dev")
-      execute("umount #{@mountpoint}/sys")
-      execute("umount #{@mountpoint}/proc")
+      execute("mount -o bind /dev #{@root}/dev")
+      execute("mount -o bind /sys #{@root}/sys")
+      execute("mount -t proc none #{@root}/proc")
+      execute("cp /etc/resolv.conf #{@root}/etc")
+      execute("chroot #{@root} #{command}")
+      execute("umount #{@root}/dev")
+      execute("umount #{@root}/sys")
+      execute("umount #{@root}/proc")
     end
 
     def partition
@@ -122,7 +124,7 @@ module Linecook
         client.describe_volumes(volume_ids: [@volume_id]).volumes.first.state
       end
       resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{File.basename(@image)}")
-      tag(resp.snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image))
+      tag(resp.snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm)
       client.delete_volume(volume_id: @volume_id)
     end
 
