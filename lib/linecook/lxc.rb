@@ -1,12 +1,15 @@
 require 'linecook/ssh'
 require 'linecook/image'
 require 'linecook/config'
+require 'linecook/executor'
 require 'tempfile'
 require 'ipaddress'
 
 module Linecook
   module Lxc
     class Container
+
+      include Executor
       MAX_WAIT = 60
       attr_reader :config, :root
       def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
@@ -173,7 +176,7 @@ eos
         @source_path = Linecook::ImageManager.fetch(@source_image)
         if @remote
           dest = "#{File.basename(@source_path)}"
-          @remote.upload(@source_path, dest) unless @remote.test("[ -f #{dest} ]")
+          @remote.upload(@source_path, dest) unless test("[ -f #{dest} ]")
           @image_path = dest
         else
           @image_path = @source_path
@@ -188,26 +191,6 @@ eos
         "-n #{@name} -P #{@home}"
       end
 
-      def capture(command, sudo: true)
-        execute(command, sudo: sudo, capture: true)
-      end
-
-      def execute(command, sudo: true, capture: false)
-        command = "sudo #{command}" if sudo
-        if @remote
-          if capture
-            return @remote.capture(command)
-          else
-            @remote.run(command)
-          end
-        else
-          if capture
-            return `#{command}`
-          else
-            system(command)
-          end
-        end
-      end
     end
 
     module Config

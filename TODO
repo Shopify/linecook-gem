@@ -1,9 +1,14 @@
 * More specs, better coverage
  * Have a CLI spec that tests every command, in addition to the unit tests.
-* Write bootstrapping file
+* Refactor
+ * AWS access
+ * image
+ * installers
+ * uploaders
+ * config parser
+ * secret handling
 * Wipe SSH keys before upload
  * Figure out how to handle login... leave user open?
-* EC2 snapshotting EBS volumes
 * Use S3 for images, support pull/push/list
 * Update linecook cookbook
  * Set a much higher number of loop devices

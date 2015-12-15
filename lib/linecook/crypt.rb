@@ -1,35 +1,42 @@
 require 'base64'
 require 'encryptor'
 
+require 'linecook/executor'
+
 module Linecook
-  module Crypto
-    extend self
+  class Crypto
+    include Executor
+    CIPHER = 'aes-256-cbc'
+    KEY_BYTES = 32 # 256 bits
+    attr_reader :iv, :secret_key
 
-    def encrypt_file(source, dest, keypath: nil)
-      load_key(File.read(keypath)) if keypath
-      File.write(dest, Encryptor.encrypt(File.read(source), key: @secret_key, iv: @iv, salt: @salt))
+    def initialize(remote: nil)
+      @remote = remote
+      load_key
     end
 
-    def decrypt_file(source, dest, keypath: nil)
-      load_key(File.read(keypath)) if keypath
-      File.write(dest, Encryptor.decrypt(File.read(source), key: @secret_key, iv: @iv, salt: @salt))
+    def encrypt_file(source, dest: nil, keypath: nil)
+      dest ||= "/tmp/#{File.basename(source)}"
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -iv #{@iv}")
+      dest
     end
 
-    def keygen
-      key_init
-      "[:IV:#{Base64.encode64(@iv)}:ST:#{@salt}:KY:#{@secret_key}]"
+    def decrypt_file(source, dest: nil, keypath: nil)
+      dest ||= "/tmp/#{File.basename(source)}-decrypted"
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -iv #{@iv} -d")
+      dest
     end
 
-    def load_key(data)
-      iv, @salt, @secret_key = data.match(/\[:IV:(.+):ST:(.+):KY:(.+)\]/m).captures
-      @iv = Base64.decode64(iv)
+    def self.keygen
+      iv = OpenSSL::Cipher::Cipher.new(CIPHER).random_iv.unpack('H*').first
+      secret_key = Base64.encode64(OpenSSL::Random.random_bytes(KEY_BYTES)).unpack('H*').first
+      "[:IV:#{iv}:KY:#{secret_key}]"
     end
 
   private
-    def key_init
-      @iv ||= OpenSSL::Cipher::Cipher.new('aes-256-gcm').random_iv
-      @salt ||= SecureRandom.uuid
-      @secret_key ||= Base64.encode64(OpenSSL::Random.random_bytes(32))
+
+    def load_key
+      @iv, @secret_key = Linecook::Config.secrets['aeskey'].match(/\[:IV:(.+):KY:(.+)\]/m).captures
     end
   end
 end

@@ -1,3 +1,5 @@
+require 'openssl'
+
 require 'sshkit'
 require 'sshkit/dsl'
 require 'net/ssh'
@@ -48,14 +50,39 @@ module Linecook
   end
 
   class SSH
-
+    MAX_RETRIES = 5
     attr_reader :username, :hostname
+
+    def self.private_key
+      userkey = File.expand_path("~/.ssh/id_rsa")
+      dedicated_key = File.join(Linecook::Config::LINECOOK_HOME, 'linecook_ssh.pem')
+      unless File.exists?(dedicated_key)
+        File.write(dedicated_key, SSHKey.generate.private_key)
+        FileUtils.chmod(0600, dedicated_key)
+      end
+      File.exists?(userkey) ? userkey : dedicated_key
+    end
+
+    def self.public_key(keyfile: nil)
+      SSHKey.new(File.read(keyfile || private_key)).ssh_public_key
+    end
+
+    # Generate a fingerprint for an SSHv2 key used by amazon, yes, this is ugly
+    def self.sshv2_fingerprint(key)
+      _, blob = key.split(/ /)
+      blob = blob.unpack("m*").first
+      reader = Net::SSH::Buffer.new(blob)
+      k=reader.read_key
+      OpenSSL::Digest.new('md5',k.to_der).hexdigest.scan(/../).join(":")
+    end
+
     def initialize(hostname, username: 'ubuntu', password: nil, keyfile: nil, proxy: nil)
       @username = username
       @password = password
       @hostname = hostname
       @keyfile = keyfile
       @proxy = proxy_command(proxy) if proxy
+      wait_for_connection
       setup_ssh_key if @keyfile
     end
 
@@ -116,8 +143,22 @@ module Linecook
 
     private
 
+    def wait_for_connection
+      puts "Waiting for SSH connection"
+      attempts = 0
+      while attempts < MAX_RETRIES
+        begin
+          run("echo connected")
+          return
+        rescue SSHKit::Runner::ExecuteError
+          puts "Retrying SSH connection"
+          attempts += 1
+        end
+      end
+    end
+
     def setup_ssh_key
-      pubkey = SSHKey.new(File.read(@keyfile)).ssh_public_key
+      pubkey = Linecook::SSH.public_key(keyfile: @keyfile)
       config = Linecook::Config.load_config[:builder]
       run("mkdir -p /home/#{config[:username]}/.ssh")
       upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")

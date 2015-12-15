@@ -1,4 +1,5 @@
 require 'yaml'
+require 'json'
 require 'fileutils'
 
 require 'xhyve'
@@ -25,6 +26,16 @@ module Linecook
         base_image: 'ubuntu-base.squashfs'
       }
     }
+
+    def secrets
+      @secrets ||= begin
+        if File.exists?('secrets.ejson')
+          JSON.load(`ejson decrypt secrets.ejson`)
+        else
+          {}
+        end
+      end
+    end
 
     def setup
       FileUtils.mkdir_p(LINECOOK_HOME)

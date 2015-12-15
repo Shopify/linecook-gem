@@ -62,6 +62,26 @@ CONFIGURATION
 
 Describe config file here once it's been determined
 
+PROVISIONERS
+------------
+
+Linecook includes an embedded chef-zero server, and uses the [chef-provisioner](https://rubygems.org/gems/chef-provisioner) and [chefdepartie](https://rubygems.org/gems/chefdepartie) gems to have first-class support for local chef-zero builds.
+
+However, if you're not using chef or don't want to use chef-zero, linecook can be used seamlessly with [packer](https://www.packer.io), and supports any of the Linux-based provisioners. This includes:
+
+* Chef-solo
+* Chef-client (with a real chef server)
+* Ansible
+* Puppet (masterless or server)
+* Salt
+* Plain old shell scripts
+
+See the packer documentation for how to configure these provisioners.
+
+To use a packerfile with linecook, just leave out the 'builder' section, or have the builder section be an empty array. Linecook will automatically insert a null builder with the appropriate connection string for you.
+
+Linecook with packer is a powerful combination, as it allows you to leverage packer's 'null builder' to take advantage of all of the provisioners packer already has really good support for.
+
 FILES
 -----
 

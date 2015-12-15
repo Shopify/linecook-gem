@@ -25,6 +25,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby-progressbar', ['=1.7.5']
   s.add_runtime_dependency 'ipaddress', ['=0.8.0']
   s.add_runtime_dependency 'encryptor', ['=1.3.0']
+  s.add_runtime_dependency 'ejson',  ['1.0.1']
+  s.add_runtime_dependency 'aws-sdk',  ['2.2.4']
   s.add_development_dependency 'rake', ['=10.4.2']
   s.add_development_dependency 'simplecov', ['=0.10.0']
   s.add_development_dependency 'rspec', ['=3.2.0']

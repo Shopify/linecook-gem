@@ -40,6 +40,26 @@ class Build < Thor
     build = Linecook::Build.new(name, '')
     build.snapshot(download: true)
   end
+
+  desc 'upload PATH', ''
+  method_options name: :string
+  def upload(path)
+    Linecook::ImageManager.upload(path)
+  end
+
+  desc 'url IMAGE', ''
+  method_options image: :string
+  def url(image)
+    puts Linecook::ImageManager.url(image)
+  end
+
+  desc 'install PATH', 'Install a snapshot at PATH'
+  method_options path: :string
+  def install(path)
+    installer = Linecook::EBSInstaller.new(path)
+    installer.install
+  end
+
 end
 
 class Linecook::CLI < Thor
@@ -53,6 +73,22 @@ class Linecook::CLI < Thor
   def bake
     Linecook::Baker.bake
   end
+
+  desc 'keygen', 'Generate AES key for securing images'
+  def keygen
+    puts Linecook::Crypto.keygen
+  end
+
+  desc 'decrypt PATH', ''
+  def decrypt(path)
+    puts Linecook::Crypto.new.decrypt_file(path)
+  end
+
+  desc 'encrypt PATH', ''
+  def encrypt(path)
+    puts Linecook::Crypto.new.encrypt_file(path)
+  end
+
 
   desc 'fetch IMAGE_NAME', 'Fetch an image by name'
   method_options name: :string
