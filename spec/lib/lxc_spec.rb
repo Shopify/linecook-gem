@@ -3,8 +3,8 @@ require File.expand_path('../../spec_helper.rb', __FILE__)
 RSpec.describe Linecook::Lxc::Container do
   context 'local' do
     it 'can generate an lxc config' do
-      # container = Linecook::Lxc::Container.new
-      # match_fixture('lxc_base_config', container.config)
+      container = Linecook::Lxc::Container.new
+      match_fixture('lxc_base_config', container.config)
     end
 
     it 'can start an lxc container' do
@@ -13,9 +13,9 @@ RSpec.describe Linecook::Lxc::Container do
       end
     end
 
-    it 'can determine ip addresses' do
+    it 'can determine the ip address' do
       with_container do |container|
-        [container.ips].each do |ip|
+        [container.ip].each do |ip|
           expect(IPAddress.valid?(ip)).to eq(true)
         end
       end

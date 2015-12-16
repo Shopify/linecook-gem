@@ -12,7 +12,8 @@ module Linecook
     extend self
 
     def fetch(name, upgrade:false, profile: :private)
-      path = File.join(IMAGE_PATH, name)
+      image_name = Linecook::Config.load_config[:image][:images][name][:name]
+      path = File.join(IMAGE_PATH, image_name)
       url = provider(profile).url(name) unless File.exist?(path) || upgrade# FIXME
       download(url, path) unless File.exist?(path) || upgrade
       path

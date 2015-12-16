@@ -8,8 +8,7 @@ module Linecook
     extend self
 
     def bake(name: 'test', image: nil)
-      image = image || Linecook::Config.load_config[:provisioner][:default_image]
-      build = Linecook::Build.new(name)
+      build = Linecook::Build.new(name, image: image)
       provider.provision(build)
     end
 

@@ -12,15 +12,15 @@ module Linecook
       include Executor
       MAX_WAIT = 60
       attr_reader :config, :root
-      def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local)
+      def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local, bridge: false)
         @name = name
         @home = home
+        @bridge = bridge
         @remote = remote == :local ? false : remote
         @root = File.join(@home, @name, 'rootfs')
         config = { utsname: name, rootfs: @root }
-        config.merge!(network: { type: 'veth', flags: 'up', link: 'lxcbr0' }) # FIXME
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
-        @source_image = image || Linecook::Config.load_config[:images][:base_image]
+        @source_image = image || :base_image
       end
 
       def start
@@ -31,7 +31,7 @@ module Linecook
         write_config
         execute("lxc-start #{container_str} -d")
         wait_running
-        setup_bridge unless @remote
+        setup_bridge if @bridge
         wait_ssh
         unmount unless running?
       end
@@ -204,7 +204,7 @@ eos
         network: {
           type: 'veth',
           flags: 'up',
-          link: 'br0'
+          link: 'lxcbr0'
         },
         mount: {
           auto: 'cgroup'

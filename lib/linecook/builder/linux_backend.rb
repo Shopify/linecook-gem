@@ -6,8 +6,8 @@ module Linecook
     def backend
       check_lxc_version
       config = Linecook::Config.load_config[:builder]
-      images = Linecook::Config.load_config[:images]
-      Linecook::Lxc::Container.new(name: config[:name], home: config[:home], image: images[config[:image]])
+      images = Linecook::Config.load_config[:image][:images]
+      Linecook::Lxc::Container.new(name: config[:name], home: config[:home], image: config[:image], bridge: true)
     end
 
     private
