@@ -1,9 +1,10 @@
 require 'forwardable'
 require 'sshkey'
 
-require 'linecook/lxc'
-require 'linecook/darwin_backend'
-require 'linecook/linux_backend'
+require 'linecook/builder/lxc'
+require 'linecook/builder/darwin_backend'
+require 'linecook/builder/linux_backend'
+require 'linecook/builder/build'
 
 module Linecook
   module Builder

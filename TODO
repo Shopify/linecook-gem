@@ -1,32 +1,31 @@
 * More specs, better coverage
  * Have a CLI spec that tests every command, in addition to the unit tests.
-* Refactor
- * AWS access
- * image
- * installers
- * uploaders
- * config parser
- * secret handling
-* Wipe SSH keys before upload
- * Figure out how to handle login... leave user open?
-* Use S3 for images, support pull/push/list
-* Update linecook cookbook
- * Set a much higher number of loop devices
- * http://chee-yang.blogspot.ca/2009/06/linux-increase-number-of-loop-devices.html
-* Better error handling
- * Check if builds already running, etc
-* Figure out config file format, fix up config class
- * Ejson support - point to secrets file
- * Sources for images
- * Memory to commit
- * disk space to commit
-* Packer support
- * Generate part of packerfile (communicator and null builder)
 * Figure out linecook commands
  * Write out what the CLI should look like
  * Write the manpage first
  * List all images
   * Base, then anything built on top
+* Figure out config file format, fix up config class
+ * Ejson support - point to secrets file
+ * config parser
+ * Sources for images
+ * Memory to commit
+ * disk space to commit
+* Refactor
+ * AWS access
+ * image
+ * installers
+ * uploaders
+ * secret handling
+* Buildkite
+* Packer support
+ * Generate part of packerfile (communicator and null builder)
+* Wipe SSH keys before upload
+ * Figure out how to handle login... leave user open?
+* Update linecook cookbook
+ * Set a much higher number of loop devices
+ * http://chee-yang.blogspot.ca/2009/06/linux-increase-number-of-loop-devices.html
+* Better error handling
+ * Check if builds already running, etc
 * Extract /abstract out ubuntuisms for build
  * Builder doesn't matter
-* Add latest LXC to builder image

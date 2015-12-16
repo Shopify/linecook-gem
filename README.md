@@ -41,6 +41,11 @@ linecook builder
   info - show the info about the builder
   ip - show the builder's ip
 
+linecook config
+  setup
+  check - validate config
+  show
+
 linecook build
   list
   info NAME
@@ -49,13 +54,13 @@ linecook build
 
 linecook image
   list
+  keygen - generate a new secret key for image encryption
   fetch
   find [`REGEX`] - list available remote images filtered by an optional regex
 
 linecook ami [`image`] [-r --region `REGION1,REGION2`] [-x --xen-type `PV|HVM`] [-r --root-size GIGABYTES] - create an AMI (Amazon Machine Image) from a snapshot.
 
 
-linecook keygen - generate a new secret key for image encryption
 
 CONFIGURATION
 -------------

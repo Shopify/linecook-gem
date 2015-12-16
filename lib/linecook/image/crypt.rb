@@ -1,7 +1,8 @@
 require 'base64'
 require 'encryptor'
 
-require 'linecook/executor'
+require 'linecook/util/executor'
+require 'linecook/util/config'
 
 module Linecook
   class Crypto

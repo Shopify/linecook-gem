@@ -5,7 +5,7 @@ require 'sshkit/dsl'
 require 'net/ssh'
 require 'net/ssh/proxy/command'
 
-require 'linecook/config'
+require 'linecook/util/config'
 
 module Linecook
   class SSHKit::Formatter::Linecook < SSHKit::Formatter::Pretty

@@ -1,7 +1,7 @@
-require 'linecook/ssh'
-require 'linecook/image'
-require 'linecook/config'
-require 'linecook/executor'
+require 'linecook/image/manager'
+require 'linecook/util/ssh'
+require 'linecook/util/config'
+require 'linecook/util/executor'
 require 'tempfile'
 require 'ipaddress'
 

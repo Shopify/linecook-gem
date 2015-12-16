@@ -20,10 +20,39 @@ module Linecook
         username: 'ubuntu',
         password: 'ubuntu'
       },
-      images: {
-        live_iso: 'livesys.iso',
-        live_image: 'livesys.squashfs',
-        base_image: 'ubuntu-base.squashfs'
+      provisioner: {
+        provider: :chefzero,
+        default_image: :base_image,
+      },
+      image: {
+        provider: {
+          public: :github,
+          private: :s3,
+        },
+        images: {
+          live_iso: {
+            name: 'livesys.iso',
+            profile: :public,
+          },
+          live_image: {
+            name: 'livesys.squashfs',
+            profile: :public,
+          },
+          base_image: {
+            name: 'ubuntu-base.squashfs',
+            profile: :public,
+          }
+        }
+      },
+      packager: {
+        provider: :ebs,
+        ebs: {
+          hvm: true,
+          size: 10,
+          region: 'us-east-1'
+        }
+      },
+      roles: {
       }
     }
 
