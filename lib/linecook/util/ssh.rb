@@ -51,7 +51,7 @@ module Linecook
 
   class SSH
     MAX_RETRIES = 5
-    attr_reader :username, :hostname
+    attr_reader :username, :password, :hostname, :keyfile
 
     def self.private_key
       userkey = File.expand_path("~/.ssh/id_rsa")

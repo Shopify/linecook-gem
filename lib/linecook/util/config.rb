@@ -21,7 +21,7 @@ module Linecook
         password: 'ubuntu'
       },
       provisioner: {
-        provider: :chefzero,
+        default_provider: :chefzero,
         default_image: :base_image,
       },
       image: {

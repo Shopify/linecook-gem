@@ -1,4 +1,5 @@
 coverage
+mkmf.log
 *.swp
 *.swo
 *.gem
