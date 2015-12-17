@@ -9,7 +9,7 @@ module Linecook
     def url(name)
       client
       s3 = Aws::S3::Resource.new
-      obj = s3.bucket(Linecook.config[:s3][:bucket]).object(name)
+      obj = s3.bucket(Linecook.config[:aws][:s3][:bucket]).object(name)
       obj.presigned_url(:get, expires_in: EXPIRY * 60)
     end
 
@@ -17,7 +17,7 @@ module Linecook
       File.open(path, 'rb') do |file|
         fname = File.basename(path)
         pbar = ProgressBar.create(title: fname, total: file.size)
-        common_opts = { bucket: Linecook.config[:s3][:bucket], key: File.join('builds', fname) }
+        common_opts = { bucket: Linecook.config[:aws][:s3][:bucket], key: File.join('builds', fname) }
         resp = client.create_multipart_upload(storage_class: 'REDUCED_REDUNDANCY', server_side_encryption: 'AES256', **common_opts)
         id = resp.upload_id
         part = 0
