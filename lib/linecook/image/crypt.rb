@@ -1,6 +1,7 @@
 require 'base64'
 require 'encryptor'
 
+require 'linecook/image/manager'
 require 'linecook/util/executor'
 require 'linecook/util/config'
 
@@ -14,6 +15,11 @@ module Linecook
     def initialize(remote: nil)
       @remote = remote
       load_key
+    end
+
+    def encrypt_image(image)
+      image_path = File.join(Linecook::ImageManager::IMAGE_PATH,File.basename(image))
+      encrypt_file(image_path)
     end
 
     def encrypt_file(source, dest: nil, keypath: nil)

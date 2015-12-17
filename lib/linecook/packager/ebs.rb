@@ -125,7 +125,7 @@ module Linecook
           client.describe_volumes(volume_ids: [@volume_id]).volumes.first.state
         end
         resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{File.basename(@image)}")
-        tag(resp.snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm)
+        tag(resp.snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm.to_s)
         client.delete_volume(volume_id: @volume_id)
       end
 

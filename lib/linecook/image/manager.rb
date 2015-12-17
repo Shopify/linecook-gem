@@ -19,12 +19,13 @@ module Linecook
       path
     end
 
-    def upload(path, profile: :private)
+    def upload(image, profile: :private)
+      path = File.join(IMAGE_PATH, File.basename(image))
       puts "Encrypting and uploading image #{path}"
       provider(profile).upload(Linecook::Crypto.new.encrypt_file(path))
     end
 
-    def url(image)
+    def url(image, profile: :private)
       provider(profile).url("builds/#{image}")
     end
 

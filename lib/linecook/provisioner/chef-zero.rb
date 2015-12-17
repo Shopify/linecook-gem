@@ -8,13 +8,14 @@ module Linecook
   module Chef
     extend self
 
-    def provision(build)
+    def provision(build, role)
       chef_config = setup
+      role_config = Linecook::Config.load_config[:roles][role.to_sym]
       script = ChefProvisioner::Bootstrap.generate(
         node_name: chef_config[:node_name],
         chef_version: chef_config[:version] || nil,
         first_boot: {
-          run_list: chef_config[:run_list]
+          run_list: role_config[:run_list]
         }
       )
 

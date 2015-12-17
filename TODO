@@ -1,23 +1,20 @@
-* More specs, better coverage
- * Have a CLI spec that tests every command, in addition to the unit tests.
+* Refactor
+ * AWS access
+ * secret handling
+* Figure out config file format, fix up config class
+ * Ejson support - point to secrets file
+* Buildkite
+* config parser
+ * Sources for images
+ * Memory to commit
+ * disk space to commit
 * Figure out linecook commands
  * Write out what the CLI should look like
  * Write the manpage first
  * List all images
   * Base, then anything built on top
-* Figure out config file format, fix up config class
- * Ejson support - point to secrets file
- * config parser
- * Sources for images
- * Memory to commit
- * disk space to commit
-* Refactor
- * AWS access
- * image
- * installers
- * uploaders
- * secret handling
-* Buildkite
+ * Have a CLI spec that tests every command, in addition to the unit tests.
+* Have tests use sample config and sample secrets
 * Packer support
  * Generate part of packerfile (communicator and null builder)
 * Wipe SSH keys before upload

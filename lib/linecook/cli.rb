@@ -46,9 +46,8 @@ class Image < Thor
 
   desc 'package IMAGE', 'Package image'
   method_options image: :string
-  def install(image)
-    packager = Linecook::EBSPackager.new(image)
-    packager.package
+  def package(image)
+    Linecook::Packager.package(image)
   end
 end
 
@@ -92,7 +91,7 @@ class Build < Thor
   method_option :name, type: :string, required: true, banner: 'ROLE_NAME', desc: 'Name of the role to build', aliases: '-n'
   def snapshot
     build = Linecook::Build.new(name, '')
-    build.snapshot(download: true)
+    build.snapshot(save: true)
   end
 end
 
@@ -110,11 +109,12 @@ class Linecook::CLI < Thor
   desc 'bake', 'Bake a new image.'
   method_option :name, type: :string, required: true, banner: 'ROLE_NAME', desc: 'Name of the role to build', aliases: '-n'
   method_option :image, type: :string,  banner: 'SOURCE_IMAGE', desc: 'Source image to seed the build.', aliases: '-i'
+  method_option :build, type: :boolean, default: true, desc: 'Build the image', aliases: '-b'
   method_option :snapshot, type: :boolean, default: false, desc: 'Snapshot the resulting build to create an image', aliases: '-s'
-  method_option :encrypt, type: :boolean, default: false, desc: 'Encrypt the resulting build. Implies --snapshot.', aliases: '-e'
   method_option :upload, type: :boolean, default: false, desc: 'Upload the resulting build. Implies --snapshot and --encrypt.', aliases: '-u'
+  method_option :package, type: :boolean, default: false, desc: 'Package the resulting image. Implies --upload, --snapshot and --encrypt.', aliases: '-p'
   def bake
-    puts options
-    #Linecook::Baker.bake
+    opts = options.symbolize_keys
+    Linecook::Baker.bake(**opts)
   end
 end
