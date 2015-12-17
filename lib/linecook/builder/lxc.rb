@@ -173,7 +173,7 @@ eos
 
 
       def setup_image
-        @source_path = Linecook::ImageManager.fetch(@source_image)
+        @source_path = Linecook::ImageManager.fetch(@source_image, profile: :public)
         if @remote
           dest = "#{File.basename(@source_path)}"
           @remote.upload(@source_path, dest) unless test("[ -f #{dest} ]")
