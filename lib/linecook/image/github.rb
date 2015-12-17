@@ -17,7 +17,7 @@ module Linecook
     end
 
     def source
-      @source ||= (Config.load_config['source_repo'] || 'dalehamel/lxb')
+      @source ||= (Linecook.config['source_repo'] || 'dalehamel/lxb')
     end
 
     def latest

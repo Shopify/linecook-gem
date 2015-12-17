@@ -9,7 +9,7 @@ module Linecook
     extend self
 
     def fetch(name, upgrade:false, profile: :private)
-      image_name = Linecook::Config.load_config[:image][:images][name][:name]
+      image_name = Linecook.config[:image][:images][name][:name]
       path = File.join(IMAGE_PATH, image_name)
       url = provider(profile).url(name) unless File.exist?(path) || upgrade# FIXME
       Linecook::Downloader.download(url, path) unless File.exist?(path) || upgrade
@@ -29,7 +29,7 @@ module Linecook
   private
 
     def provider(image_profile)
-      profile = Linecook::Config.load_config[:image][:provider][image_profile]
+      profile = Linecook.config[:image][:provider][image_profile]
       case profile
       when :s3
         S3Manager

@@ -2,6 +2,8 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'chefdepartie', path: '../chefdepartie'
+
 group :deploy do
   gem 'capistrano', '~> 3.4'
   gem 'capistrano-bundler'

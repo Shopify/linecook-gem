@@ -20,7 +20,7 @@ module Linecook
   private
 
     def provider(name)
-      provisioner = Linecook::Config.load_config[:roles][name.to_sym][:provisioner] || Linecook::Config.load_config[:provisioner][:default_provider]
+      provisioner = Linecook.config[:roles][name.to_sym][:provisioner] || Linecook.config[:provisioner][:default_provider]
       case provisioner
       when :chefzero
         Linecook::Chef

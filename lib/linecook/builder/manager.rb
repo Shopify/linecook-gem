@@ -24,7 +24,7 @@ module Linecook
     end
 
     def ssh
-      config = Linecook::Config.load_config[:builder]
+      config = Linecook.config[:builder]
       @ssh ||= SSH.new(ip, username: config[:username], password: config[:password], keyfile: Linecook::SSH.private_key)
     end
 

@@ -84,7 +84,7 @@ module Linecook
 
       def client
         @client ||= begin
-          credentials = Aws::Credentials.new(Linecook::Config.secrets['aws_access_key'], Linecook::Config.secrets['aws_secret_key'])
+          credentials = Aws::Credentials.new(Linecook.config[:aws][:access_key], Linecook.config[:aws][:secret_key])
           Aws::EC2::Client.new(region: @region, credentials: credentials)
         end
       end

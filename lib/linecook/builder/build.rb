@@ -10,7 +10,7 @@ module Linecook
     def initialize(name, image: nil)
       Linecook::Builder.start
       @name = name
-      @image = image || Linecook::Config.load_config[:provisioner][:default_image]
+      @image = image || Linecook.config[:provisioner][:default_image]
       @container = Linecook::Lxc::Container.new(name: @name, image: @image, remote: Linecook::Builder.ssh)
     end
 

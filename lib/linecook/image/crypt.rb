@@ -43,7 +43,7 @@ module Linecook
   private
 
     def load_key
-      @iv, @secret_key = Linecook::Config.secrets['aeskey'].match(/\[:IV:(.+):KY:(.+)\]/m).captures
+      @iv, @secret_key = Linecook.config[:aeskey].match(/\[:IV:(.+):KY:(.+)\]/m).captures
     end
   end
 end

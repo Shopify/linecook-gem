@@ -10,7 +10,7 @@ module Linecook
 
     def provision(build, role)
       chef_config = setup
-      role_config = Linecook::Config.load_config[:roles][role.to_sym]
+      role_config = Linecook.config[:roles][role.to_sym]
       script = ChefProvisioner::Bootstrap.generate(
         node_name: chef_config[:node_name],
         chef_version: chef_config[:version] || nil,
@@ -31,7 +31,7 @@ module Linecook
 
     def setup
       ChefProvisioner::Config.setup(client: 'linecook', listen: 'localhost')
-      config = Linecook::Config.load_config
+      config = Linecook.config
 
       chef_config = config[:chef]
       chef_config.merge!(node_name: "linecook-#{SecureRandom.uuid}",
@@ -71,7 +71,7 @@ module Linecook
       def build
         if stale
           puts 'Regenerating cookbook cache'
-          Chefdepartie.run(background: true, config: Linecook::Config.load_config[:chef], cache: CACHE_PATH)
+          Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
           Chefdepartie.stop
           write_stamp
           unlock

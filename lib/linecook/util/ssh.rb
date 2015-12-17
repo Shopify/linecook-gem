@@ -160,7 +160,7 @@ module Linecook
 
     def setup_ssh_key
       pubkey = Linecook::SSH.public_key(keyfile: @keyfile)
-      config = Linecook::Config.load_config[:builder]
+      config = Linecook.config[:builder]
       run("mkdir -p /home/#{config[:username]}/.ssh")
       upload(pubkey, "/home/#{config[:username]}/.ssh/authorized_keys")
     end

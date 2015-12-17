@@ -99,7 +99,7 @@ module Linecook
         @upper_dir = File.join(@upper_base, '/upper')
         @work_dir = File.join(@upper_base, '/work')
         @socket_dirs = []
-        (Linecook::Config.load_config[:socket_dirs] ||[]).each{ |sock| @socket_dirs << File.join(@root, sock) }
+        (Linecook.config[:socket_dirs] ||[]).each{ |sock| @socket_dirs << File.join(@root, sock) }
       end
 
       def write_config

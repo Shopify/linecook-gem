@@ -20,7 +20,7 @@ module Linecook
       include Executor
 
       def initialize(build, role)
-        role_config = Linecook::Config.load_config[:roles][role.to_sym]
+        role_config = Linecook.config[:roles][role.to_sym]
         @packer = packer_path
         @build = build
         @template = role_config[:template_path]
