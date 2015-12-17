@@ -1,16 +1,90 @@
 .TH LINECOOK 1 "December 2015" Unix "User Manuals"
 .SH NAME
 .PP
-linecook \- system image builder
+linecook \- Linux system image builder
 .SH SYNOPSIS
+.PP
+linecook setup \- interactive setup
 .PP
 linecook help [\fB\fCCOMMAND\fR]\- for specific command help
 .SH DESCRIPTION
 .PP
 Linecook builds system images utilizing overlayfs, squashfs, and linux containers via LXC. Currently, linecook only natively supports chef for provisioning, but using packer with a null resource, any of the mechanisms supported by packer are also supported by linecook.
+.PP
+Linecook is intended to serve 3 main purposes:
+.RS
+.IP \(bu 2
+Providing a simple, portable image building process that is useable both in baremetal and cloud deployments.
+.IP \(bu 2
+Enabling a means of simple local image development with high production efficacy on Linux and OS X.
+.IP \(bu 2
+Simplifying continuous integration and testing of linux systems.
+.RE
+.SH USAGE
+.TP
+linecook bake SPEC [\-n \-\-name \fB\fCNAME\fR] [\-s \-\-snapshot]
+\-\-name \- The name
+\-\-snapshot \- Snapshot the resulting image for later use
+\-\-encrypt \- Encrypt the snapshot using the configured key. Implies snapshot.
+\-\-upload \- Upload the resulting image to the configured destination. Implies snapshot.
+\-\-all \- Snapshot, encrypt, and upload the resulting image.
+Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
+.TP
+linecook builder
+start \- start a new builder
+stop \- stop a running builder
+info \- show the info about the builder
+ip \- show the builder's ip
+.TP
+linecook config
+setup
+check \- validate config
+show
+.TP
+linecook build
+list
+info NAME
+ip NAME
+stop NAME
+.TP
+linecook image
+list
+keygen \- generate a new secret key for image encryption
+fetch
+find [\fB\fCREGEX\fR] \- list available remote images filtered by an optional regex
+.PP
+linecook ami [\fB\fCimage\fR] [\-r \-\-region \fB\fCREGION1,REGION2\fR] [\-x \-\-xen\-type \fB\fCPV|HVM\fR] [\-r \-\-root\-size GIGABYTES] \- create an AMI (Amazon Machine Image) from a snapshot.
 .SH CONFIGURATION
 .PP
 Describe config file here once it's been determined
+.SH PROVISIONERS
+.PP
+Linecook includes an embedded chef\-zero server, and uses the chef\-provisioner
+\[la]https://rubygems.org/gems/chef-provisioner\[ra] and chefdepartie
+\[la]https://rubygems.org/gems/chefdepartie\[ra] gems to have first\-class support for local chef\-zero builds.
+.PP
+However, if you're not using chef or don't want to use chef\-zero, linecook can be used seamlessly with packer
+\[la]https://www.packer.io\[ra], and supports any of the Linux\-based provisioners. This includes:
+.RS
+.IP \(bu 2
+Chef\-solo
+.IP \(bu 2
+Chef\-client (with a real chef server)
+.IP \(bu 2
+Ansible
+.IP \(bu 2
+Puppet (masterless or server)
+.IP \(bu 2
+Salt
+.IP \(bu 2
+Plain old shell scripts
+.RE
+.PP
+See the packer documentation for how to configure these provisioners.
+.PP
+To use a packerfile with linecook, just leave out the 'builder' section, or have the builder section be an empty array. You need only specify the 'provisioner' section, and other sections may cause errors. Linecook will automatically insert a null builder with the appropriate connection string for you.
+.PP
+Linecook with packer is a powerful combination, as it allows you to leverage packer's 'null builder' to take advantage of all of the provisioners packer already has really good support for. The result is an intermediate image format (squashfs) that can be easily applied to any target.
 .SH FILES
 .TP
 \fI\&./linecook.yml\fP
