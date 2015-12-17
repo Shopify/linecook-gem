@@ -14,6 +14,7 @@ module Linecook
       snapshot = build_agent.snapshot(save: true) if snapshot ||  upload || package
       Linecook::ImageManager.upload(snapshot) if upload || package
       Linecook::Packager.package(snapshot) if package
+      build_agent.stop
     end
 
   private
