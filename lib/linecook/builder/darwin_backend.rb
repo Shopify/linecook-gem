@@ -80,8 +80,7 @@ module Linecook
 
     # get and mount the iso
     def get_iso
-      image = Linecook.config[:images][:live_iso]
-      @image_path = Linecook::ImageFetcher.fetch(image)
+      @image_path = Linecook::ImageManager.fetch(:live_iso, profile: public)
     end
 
     def mount_iso
