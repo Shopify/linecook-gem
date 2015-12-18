@@ -24,6 +24,7 @@ module Linecook
       build.ssh.forward(chef_port)
       build.ssh.upload(script, '/tmp/chef_bootstrap')
       build.ssh.run('sudo bash /tmp/chef_bootstrap')
+      build.ssh.run('sudo rm -rf /etc/chef')
       build.ssh.stop_forwarding
     end
 
