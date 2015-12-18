@@ -69,7 +69,7 @@ module Linecook
           command = "#{ejson_path} decrypt #{SECRETS_PATH}"
           secrets = JSON.load(`#{command}`)
           # if we can't read the ejson key, try again with sudo
-          secrets = JSON.load(`sudo #{command}`) if secrets.empty
+          secrets = JSON.load(`sudo #{command}`) if secrets.empty?
           secrets.deep_symbolize_keys
         else
           {}
