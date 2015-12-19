@@ -65,11 +65,9 @@ module Linecook
     def secrets
       @secrets ||= begin
         if File.exists?(SECRETS_PATH)
-          ejson_path = `which ejson`.strip
+          ejson_path = File.join(Gem::Specification.find_by_name('ejson').gem_dir, 'build', "#{Linecook::Config.platform}-amd64", 'ejson' )
           command = "#{ejson_path} decrypt #{SECRETS_PATH}"
-          secrets = JSON.load(`#{command}`)
-          # if we can't read the ejson key, try again with sudo
-          secrets = JSON.load(`sudo #{command}`) if secrets.empty?
+          secrets = JSON.load(`sudo #{command}`)
           secrets.deep_symbolize_keys
         else
           {}
