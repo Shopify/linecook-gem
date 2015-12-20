@@ -36,9 +36,17 @@ module Linecook
         unmount unless running?
       end
 
+      def pause
+        execute("lxc-stop #{container_str} -k") if running?
+      end
+
+      def resume
+        execute("lxc-start #{container_str} -d") unless running?
+      end
+
       def stop
         setup_dirs
-        execute("lxc-stop #{container_str} -k")
+        execute("lxc-stop #{container_str} -k") if running?
         unmount
       end
 

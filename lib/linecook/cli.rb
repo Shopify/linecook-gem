@@ -108,8 +108,10 @@ class Linecook::CLI < Thor
 
   desc 'bake', 'Bake a new image.'
   method_option :name, type: :string, required: true, banner: 'ROLE_NAME', desc: 'Name of the role to build', aliases: '-n'
+  method_option :tag, type: :string, required: false, banner: 'TAG', desc: 'Optional tag for a build', aliases: '-t'
   method_option :image, type: :string,  banner: 'SOURCE_IMAGE', desc: 'Source image to seed the build.', aliases: '-i'
   method_option :keep, type: :boolean, default: true, desc: 'Keep the build running when done', aliases: '-k'
+  method_option :clean, type: :boolean, default: false, desc: 'Clean up all build artifacts', aliases: '-c'
   method_option :build, type: :boolean, default: true, desc: 'Build the image', aliases: '-b'
   method_option :snapshot, type: :boolean, default: false, desc: 'Snapshot the resulting build to create an image', aliases: '-s'
   method_option :upload, type: :boolean, default: false, desc: 'Upload the resulting build. Implies --snapshot and --encrypt.', aliases: '-u'

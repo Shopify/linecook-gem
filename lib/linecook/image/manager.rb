@@ -1,3 +1,5 @@
+require 'fileutils'
+
 require 'linecook/image/crypt'
 require 'linecook/image/github'
 require 'linecook/image/s3'
@@ -19,7 +21,9 @@ module Linecook
     def upload(image, profile: :private)
       path = File.join(IMAGE_PATH, File.basename(image))
       puts "Encrypting and uploading image #{path}"
-      provider(profile).upload(Linecook::Crypto.new.encrypt_file(path))
+      encrypted = Linecook::Crypto.new.encrypt_file(path)
+      provider(profile).upload(encrypted)
+      FileUtils.rm_f(encrypted)
     end
 
     def url(image, profile: :private)

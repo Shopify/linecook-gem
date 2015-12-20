@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'fileutils'
 
 require 'linecook/builder/build'
 require 'linecook/provisioner/chef-zero'
@@ -8,13 +9,15 @@ module Linecook
   module Baker
     extend self
 
-    def bake(name: nil, image: nil, snapshot: nil, upload: nil, package: nil, build: nil, keep: nil)
-      build_agent = Linecook::Build.new(name, image: image)
+    def bake(name: nil, tag: nil, image: nil, snapshot: nil, upload: nil, package: nil, build: nil, keep: nil, clean: nil)
+      build_agent = Linecook::Build.new(name, tag: tag, image: image)
       provider(name).provision(build_agent, name) if build
       snapshot = build_agent.snapshot(save: true) if snapshot ||  upload || package
       Linecook::ImageManager.upload(snapshot) if upload || package
       Linecook::Packager.package(snapshot) if package
+    ensure
       build_agent.stop unless keep
+      FileUtils.rm_f(snapshot) if clean
     end
 
   private
