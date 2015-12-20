@@ -1,9 +1,11 @@
+* Better image handling
+ * Source image support
+  * Specifically, base image
+ * Image subcommands
 * Refactor
  * AWS access
  * secret handling
 * Figure out config file format, fix up config class
- * Ejson support - point to secrets file
-* Buildkite
 * config parser
  * Sources for images
  * Memory to commit
@@ -15,13 +17,8 @@
   * Base, then anything built on top
  * Have a CLI spec that tests every command, in addition to the unit tests.
 * Have tests use sample config and sample secrets
-* Packer support
- * Generate part of packerfile (communicator and null builder)
 * Wipe SSH keys before upload
  * Figure out how to handle login... leave user open?
-* Update linecook cookbook
- * Set a much higher number of loop devices
- * http://chee-yang.blogspot.ca/2009/06/linux-increase-number-of-loop-devices.html
 * Better error handling
  * Check if builds already running, etc
 * Extract /abstract out ubuntuisms for build
