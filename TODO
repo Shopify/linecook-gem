@@ -3,7 +3,6 @@
  * Source image support
   * Specifically, base image
  * Image subcommands
-* Remove IVs if possible
 * Refactor
  * AWS access
  * secret handling

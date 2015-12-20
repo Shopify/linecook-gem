@@ -24,13 +24,13 @@ module Linecook
 
     def encrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key}", sudo: false)
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -pass 'pass:#{@secret_key}'", sudo: false)
       dest
     end
 
     def decrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -d", sudo: false)
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -pass pass:#{@secret_key}' -d", sudo: false)
       dest
     end
 
