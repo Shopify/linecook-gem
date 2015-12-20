@@ -24,26 +24,24 @@ module Linecook
 
     def encrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -iv #{@iv}")
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key}", sudo: false)
       dest
     end
 
     def decrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -iv #{@iv} -d")
+      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -K #{@secret_key} -d", sudo: false)
       dest
     end
 
     def self.keygen
-      iv = OpenSSL::Cipher::Cipher.new(CIPHER).random_iv.unpack('H*').first
       secret_key = Base64.encode64(OpenSSL::Random.random_bytes(KEY_BYTES)).unpack('H*').first
-      "[:IV:#{iv}:KY:#{secret_key}]"
     end
 
   private
 
     def load_key
-      @iv, @secret_key = Linecook.config[:aeskey].match(/\[:IV:(.+):KY:(.+)\]/m).captures
+      @secret_key = Linecook.config[:aeskey]
     end
   end
 end

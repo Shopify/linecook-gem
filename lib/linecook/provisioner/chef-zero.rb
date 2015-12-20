@@ -26,6 +26,8 @@ module Linecook
       build.ssh.run('sudo bash /tmp/chef_bootstrap')
       build.ssh.run('sudo rm -rf /etc/chef')
       build.ssh.stop_forwarding
+      Chefdepartie.stop
+      FileUtils.rm_rf(Cache.path)
     end
 
     private
@@ -56,11 +58,13 @@ module Linecook
       extend self
 
       def path
-        FileUtils.mkdir_p(CACHE_PATH)
-        cache_path = Dir.mktmpdir
-        build
-        copy(cache_path)
-        cache_path
+        @cache_path ||= begin
+          FileUtils.mkdir_p(CACHE_PATH)
+          cache_path = Dir.mktmpdir
+          build
+          copy(cache_path)
+          cache_path
+        end
       end
 
     private

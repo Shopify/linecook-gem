@@ -23,7 +23,6 @@ module Linecook
       puts "Encrypting and uploading image #{path}"
       encrypted = Linecook::Crypto.new.encrypt_file(path)
       provider(profile).upload(encrypted)
-      puts "Cleaning up encrypted tmp #{encrypted}"
       FileUtils.rm_f(encrypted)
     end
 
