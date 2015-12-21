@@ -18,6 +18,7 @@ module Linecook
     rescue => e
       puts e.message
       puts e.backtrace
+      raise e
     ensure
       build_agent.stop(clean: clean) unless keep
       build_agent.clean if clean
