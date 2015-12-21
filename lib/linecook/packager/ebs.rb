@@ -20,8 +20,9 @@ module Linecook
         @region = region
       end
 
-      def package(image)
+      def package(image, type: nil)
         @image = image
+        @type = type
         setup_remote unless instance_id
         prepare
         execute("tar -C #{@mountpoint} -cpf - . | sudo tar -C #{@root} -xpf -")
@@ -166,7 +167,7 @@ module Linecook
       def setup_remote
         start_node
         path = "/tmp/#{File.basename(@image)}"
-        @remote.run("wget '#{Linecook::ImageManager.url(File.basename(@image))}' -nv -O #{path}")
+        @remote.run("wget '#{Linecook::ImageManager.url(File.basename(@image), type: @type)}' -nv -O #{path}")
         @image = Linecook::Crypto.new(remote: @remote).decrypt_file(path)
       end
 

@@ -9,12 +9,12 @@ module Linecook
   module Baker
     extend self
 
-    def bake(name: nil, tag: nil, image: nil, snapshot: nil, upload: nil, package: nil, build: nil, keep: nil, clean: nil)
-      build_agent = Linecook::Build.new(name, tag: tag, image: image)
+    def bake(name: nil, tag: nil, id: nil, snapshot: nil, upload: nil, package: nil, build: nil, keep: nil, clean: nil)
+      build_agent = Linecook::Build.new(name, tag: tag, id: id)
       provider(name).provision(build_agent, name) if build
       snapshot = build_agent.snapshot(save: true) if snapshot ||  upload || package
-      Linecook::ImageManager.upload(snapshot) if upload || package
-      Linecook::Packager.package(snapshot) if package
+      Linecook::ImageManager.upload(snapshot, type: build_agent.type) if upload || package
+      Linecook::Packager.package(snapshot, type: build_agent.type) if package
     ensure
       build_agent.stop unless keep
       FileUtils.rm_f(snapshot) if clean

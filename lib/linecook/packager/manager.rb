@@ -4,8 +4,8 @@ module Linecook
   module Packager
     extend self
 
-    def package(image)
-      provider.package(image)
+    def package(image, type: type)
+      provider.package(image, type: type)
     end
 
   private

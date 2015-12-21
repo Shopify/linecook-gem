@@ -1,5 +1,6 @@
 require 'base64'
 require 'encryptor'
+require 'tempfile'
 
 require 'linecook/image/manager'
 require 'linecook/util/executor'
@@ -24,13 +25,21 @@ module Linecook
 
     def encrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -pass 'pass:#{@secret_key}'", sudo: false)
+      Tempfile.open('key') do |key|
+        key.write(@secret_key)
+        key.flush
+        capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path}", sudo: false)
+      end
       dest
     end
 
     def decrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
-      capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -pass pass:#{@secret_key}' -d", sudo: false)
+      Tempfile.open('key') do |key|
+        @remote.upload(@secret_key, key.path) if @remote
+        capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path} -d", sudo: false)
+        @remote.run("rm #{key.path}") if @remote
+      end
       dest
     end
 

@@ -23,7 +23,18 @@ class Image < Thor
   subcommand 'crypto', Crypto
 
   desc 'list', 'List images' # add remote flag
+  method_option :type, type: :string, required: false, banner: 'ID', desc: 'Type of image to list', aliases: '-t'
+  method_option :profile, type: :string, default: 'private', banner: 'PROFILE', desc: 'Profile (public/private) of image to list', enum: %w(public private), aliases: '-p'
   def list
+    opts = options.symbolize_keys
+    puts Linecook::ImageManager.list(**opts)
+  end
+
+  desc 'latest ID', 'Get the latest image by id' # add remote flag
+  method_option :profile, type: :string, default: 'private', banner: 'PROFILE', desc: 'Profile (public/private) of image to list', enum: %w(public private), aliases: '-p'
+  def latest(id)
+    opts = options.symbolize_keys
+    puts Linecook::ImageManager.latest(id, **opts)
   end
 
   desc 'fetch IMAGE_NAME', 'Fetch an image by name'
@@ -39,9 +50,10 @@ class Image < Thor
   end
 
   desc 'url IMAGE', 'Get URL for image'
-  method_options image: :string
+  method_option :type, type: :string, required: false, banner: 'ID', desc: 'Type of image to list', aliases: '-t'
   def url(image)
-    puts Linecook::ImageManager.url(image)
+    opts = options.symbolize_keys
+    puts Linecook::ImageManager.url(image, **opts)
   end
 
   desc 'package IMAGE', 'Package image'
@@ -109,7 +121,7 @@ class Linecook::CLI < Thor
   desc 'bake', 'Bake a new image.'
   method_option :name, type: :string, required: true, banner: 'ROLE_NAME', desc: 'Name of the role to build', aliases: '-n'
   method_option :tag, type: :string, required: false, banner: 'TAG', desc: 'Optional tag for a build', aliases: '-t'
-  method_option :image, type: :string,  banner: 'SOURCE_IMAGE', desc: 'Source image to seed the build.', aliases: '-i'
+  method_option :id, type: :string, required: false, banner: 'ID', desc: 'Optional id for a build', aliases: '-i'
   method_option :keep, type: :boolean, default: true, desc: 'Keep the build running when done', aliases: '-k'
   method_option :clean, type: :boolean, default: false, desc: 'Clean up all build artifacts', aliases: '-c'
   method_option :build, type: :boolean, default: true, desc: 'Build the image', aliases: '-b'

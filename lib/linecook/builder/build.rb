@@ -6,10 +6,12 @@ module Linecook
     extend Forwardable
 
     def_instance_delegators :@container, :stop, :start, :ip, :info
+    attr_reader :type
 
-    def initialize(name, tag: nil, image: nil)
+    def initialize(name, tag: nil, image: nil, id: nil)
       Linecook::Builder.start
-      @id = tag ? "#{name}-#{tag}" : name
+      @type = tag ? "#{name}-#{tag}" : name
+      @id = id ? "#{@type}-#{id}" : @type
       @image = image || Linecook.config[:provisioner][:default_image]
       @container = Linecook::Lxc::Container.new(name: @id, image: @image, remote: Linecook::Builder.ssh)
     end
