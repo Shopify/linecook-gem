@@ -4,8 +4,9 @@ require 'linecook/builder/manager'
 module Linecook
   class Build
     extend Forwardable
+    USERNAME = 'linecook'
 
-    def_instance_delegators :@container, :stop, :start, :ip, :info
+    def_instance_delegators :@container, :start, :stop, :ip, :info
     attr_reader :type
 
     def initialize(name, tag: nil, image: nil, id: nil)
@@ -17,7 +18,7 @@ module Linecook
     end
 
     def ssh
-      @ssh ||= Linecook::SSH.new(@container.ip, username: 'ubuntu', password: 'ubuntu', proxy: Linecook::Builder.ssh, keyfile: Linecook::SSH.private_key)
+      @ssh ||= Linecook::SSH.new(@container.ip, username: USERNAME, proxy: Linecook::Builder.ssh, keyfile: Linecook::SSH.private_key, setup: false)
     end
 
     def snapshot(save: false)

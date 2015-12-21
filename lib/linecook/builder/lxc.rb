@@ -44,10 +44,11 @@ module Linecook
         execute("lxc-start #{container_str} -d") unless running?
       end
 
-      def stop
+      def stop(clean: false)
         setup_dirs
+        cexec("sudo userdel -r -f #{Linecook::Build::USERNAME}") if @remote
         execute("lxc-stop #{container_str} -k") if running?
-        unmount
+        unmount(clean: clean)
       end
 
       def ip
@@ -80,10 +81,23 @@ module Linecook
 
       private
 
+      def cexec(command)
+        execute("lxc-attach #{container_str} -- #{command}")
+      end
+
       def wait_running
         wait_for { running? }
       end
+
       def wait_ssh
+        if @remote
+          user = Linecook::Build::USERNAME
+          cexec("useradd -m -G sudo #{user}")
+          cexec("mkdir -p /home/#{user}/.ssh")
+          Linecook::Builder.ssh.upload(Linecook::SSH.public_key, "/tmp/#{@name}-pubkey")
+          Linecook::Builder.ssh.run("sudo mv /tmp/#{@name}-pubkey #{@root}/home/#{user}/.ssh/authorized_keys")
+          cexec("chown -R #{user} /home/#{user}/.ssh")
+        end
         wait_for { capture("lxc-attach -n #{@name} -P #{@home} status ssh || true") =~ /running/ }
       end
 
@@ -144,13 +158,15 @@ module Linecook
         execute("grep -q #{dest} /etc/mtab || sudo mount #{type} #{options} #{source} #{dest}")
       end
 
-      def unmount
+      def unmount(clean: false)
         @socket_dirs.each { |sock| execute("umount #{sock}") }
+        source = capture("mount | grep #{@lower_dir} | awk '{print $1}'") if clean
         execute("umount #{@root}")
         execute("umount #{@upper_base}")
         execute("umount #{@lower_dir}")
         execute("rmdir #{@lower_dir}")
         execute("rmdir #{@upper_base}")
+        FileUtils.rm_f(source) if clean
       end
 
       def bridge_network

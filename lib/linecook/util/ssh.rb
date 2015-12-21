@@ -76,14 +76,14 @@ module Linecook
       OpenSSL::Digest.new('md5',k.to_der).hexdigest.scan(/../).join(":")
     end
 
-    def initialize(hostname, username: 'ubuntu', password: nil, keyfile: nil, proxy: nil)
+    def initialize(hostname, username: 'ubuntu', password: nil, keyfile: nil, proxy: nil, setup: true)
       @username = username
       @password = password
       @hostname = hostname
       @keyfile = keyfile
       @proxy = proxy_command(proxy) if proxy
       wait_for_connection
-      setup_ssh_key if @keyfile
+      setup_ssh_key if @keyfile && setup
     end
 
     def forward(local, remote:nil)

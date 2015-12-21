@@ -16,7 +16,7 @@ module Linecook
       Linecook::ImageManager.upload(snapshot, type: build_agent.type) if upload || package
       Linecook::Packager.package(snapshot, type: build_agent.type) if package
     ensure
-      build_agent.stop unless keep
+      build_agent.stop(clean: clean) unless keep
       FileUtils.rm_f(snapshot) if clean
     end
 
