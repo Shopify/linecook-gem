@@ -7,7 +7,6 @@ module Linecook
     extend self
 
     def url(name)
-      name = Linecook.config[:image][:images][name][:name]
       latest[:assets].find { |a| a[:name] =~ /#{name}/ }[:browser_download_url]
     end
 

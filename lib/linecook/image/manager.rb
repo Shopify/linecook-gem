@@ -14,13 +14,15 @@ module Linecook
       url_path = if image.is_a?(Symbol)
         image_name = Linecook.config[:image][:images][image][:name]
         path = File.join(IMAGE_PATH, image_name)
-        provider(profile).url(name) unless File.exist?(path) || upgrade
+        provider(profile).url(image_name) unless File.exist?(path) || upgrade
       elsif image.is_a?(Hash)
         profile = :private
         encrypted = true
         name = image[:name] == :latest ? File.basename(latest(image[:type])) : image[:name]
         path = File.join([IMAGE_PATH, image[:type], name].compact)
         provider(profile).url(name, type: image[:type])
+      else
+        puts "#{image} is invalid"
       end
 
       Linecook::Downloader.download(url_path, path, encrypted: encrypted) unless File.exist?(path) || upgrade

@@ -15,6 +15,9 @@ module Linecook
       snapshot = build_agent.snapshot(save: true) if snapshot ||  upload || package
       Linecook::ImageManager.upload(snapshot, type: build_agent.type) if upload || package
       Linecook::Packager.package(snapshot, type: build_agent.type) if package
+    rescue => e
+      puts e.message
+      puts e.backtrace
     ensure
       build_agent.stop(clean: clean) unless keep
       build_agent.clean if clean
