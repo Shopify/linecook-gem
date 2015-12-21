@@ -17,7 +17,8 @@ module Linecook
       Linecook::Packager.package(snapshot, type: build_agent.type) if package
     ensure
       build_agent.stop(clean: clean) unless keep
-      FileUtils.rm_f(snapshot) if clean
+      build_agent.clean if clean
+      FileUtils.rm_f(snapshot) if clean && File.exists?(snapshot.to_s)
     end
 
   private

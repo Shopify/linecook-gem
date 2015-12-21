@@ -27,6 +27,12 @@ module Linecook
       path
     end
 
+    def clean(type: nil)
+      Dir["#{File.join([IMAGE_PATH, type].compact)}/**/*"].each do |image|
+        FileUtils.rm_f(image) unless `mount`.index(image)
+      end
+    end
+
     def upload(image, profile: :private, type: nil)
       path = File.join(IMAGE_PATH, File.basename(image))
       puts "Encrypting and uploading image #{path}"

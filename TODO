@@ -1,10 +1,4 @@
 * Better image handling
- * Source image support
-  * Specifically, base image
- * Add option to wipe source image when done so cruft doesn't pile up in CI
-* Wipe SSH keys before upload
- * Figure out how to handle login... leave user open?
-  * Set up manually each time and clean up before image?
 * Refactor
  * AWS access
  * secret handling

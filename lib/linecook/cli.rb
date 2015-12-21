@@ -43,6 +43,13 @@ class Image < Thor
     Linecook::ImageManager.fetch(name)
   end
 
+  desc 'clean', 'Clean up cached images'
+  method_option :type, type: :string, required: true, banner: 'ID', desc: 'Type of image to list', aliases: '-t'
+  def clean
+    opts = options.symbolize_keys
+    puts Linecook::ImageManager.clean(**opts)
+  end
+
   desc 'upload IMAGE', 'Upload an image'
   method_options name: :string
   def upload(image)

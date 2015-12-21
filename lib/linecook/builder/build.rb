@@ -17,6 +17,10 @@ module Linecook
       @container = Linecook::Lxc::Container.new(name: @id, image: @image, remote: Linecook::Builder.ssh)
     end
 
+    def clean
+      Linecook::ImageManager.clean(type: @image[:type]) if @image.is_a?(Hash) && @image[:type]
+    end
+
     def ssh
       @ssh ||= Linecook::SSH.new(@container.ip, username: USERNAME, proxy: Linecook::Builder.ssh, keyfile: Linecook::SSH.private_key, setup: false)
     end

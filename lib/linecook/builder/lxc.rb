@@ -92,7 +92,7 @@ module Linecook
       def wait_ssh
         if @remote
           user = Linecook::Build::USERNAME
-          cexec("useradd -m -G sudo #{user}")
+          cexec("id -u #{user} &>/dev/null || useradd -m -G sudo #{user}")
           cexec("mkdir -p /home/#{user}/.ssh")
           Linecook::Builder.ssh.upload(Linecook::SSH.public_key, "/tmp/#{@name}-pubkey")
           Linecook::Builder.ssh.run("sudo mv /tmp/#{@name}-pubkey #{@root}/home/#{user}/.ssh/authorized_keys")
