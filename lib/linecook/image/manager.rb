@@ -10,11 +10,20 @@ module Linecook
     IMAGE_PATH = File.join(Config::LINECOOK_HOME, 'images').freeze
     extend self
 
-    def fetch(name, upgrade:false, profile: :private)
-      image_name = Linecook.config[:image][:images][name][:name]
-      path = File.join(IMAGE_PATH, image_name)
-      url = provider(profile).url(name) unless File.exist?(path) || upgrade# FIXME
-      Linecook::Downloader.download(url, path) unless File.exist?(path) || upgrade
+    def fetch(image, upgrade:false, profile: :private, type: nil, encrypted: false)
+      url_path = if image.is_a?(Symbol)
+        image_name = Linecook.config[:image][:images][image][:name]
+        path = File.join(IMAGE_PATH, image_name)
+        provider(profile).url(name) unless File.exist?(path) || upgrade
+      elsif image.is_a?(Hash)
+        profile = :private
+        encrypted = true
+        name = image[:name] == :latest ? File.basename(latest(image[:type])) : image[:name]
+        path = File.join([IMAGE_PATH, image[:type], name].compact)
+        provider(profile).url(name, type: image[:type])
+      end
+
+      Linecook::Downloader.download(url_path, path, encrypted: encrypted) unless File.exist?(path) || upgrade
       path
     end
 

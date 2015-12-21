@@ -179,7 +179,6 @@ eos
         execute("lxc-attach -n #{@name} -P #{@home} ifup lxcbr0")
       end
 
-
       def setup_image
         @source_path = Linecook::ImageManager.fetch(@source_image, profile: :public)
         if @remote

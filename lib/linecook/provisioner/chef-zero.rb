@@ -16,7 +16,8 @@ module Linecook
         chef_version: chef_config[:version] || nil,
         first_boot: {
           run_list: role_config[:run_list]
-        }
+        },
+        audit: Linecook.config[:provisioner][:chefzero][:audit]
       )
 
       puts "Establishing connection to build..."

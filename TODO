@@ -1,25 +1,22 @@
 * Better image handling
- * Put images in folders by name / tag
  * Source image support
   * Specifically, base image
- * Image subcommands
+ * Add option to wipe source image when done so cruft doesn't pile up in CI
+* Wipe SSH keys before upload
+ * Figure out how to handle login... leave user open?
+  * Set up manually each time and clean up before image?
 * Refactor
  * AWS access
  * secret handling
 * Figure out config file format, fix up config class
 * config parser
- * Sources for images
  * Memory to commit
  * disk space to commit
 * Figure out linecook commands
  * Write out what the CLI should look like
  * Write the manpage first
- * List all images
-  * Base, then anything built on top
  * Have a CLI spec that tests every command, in addition to the unit tests.
 * Have tests use sample config and sample secrets
-* Wipe SSH keys before upload
- * Figure out how to handle login... leave user open?
 * Better error handling
  * Check if builds already running, etc
 * Extract /abstract out ubuntuisms for build

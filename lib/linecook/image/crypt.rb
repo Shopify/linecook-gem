@@ -36,6 +36,8 @@ module Linecook
     def decrypt_file(source, dest: nil, keypath: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
       Tempfile.open('key') do |key|
+        key.write(@secret_key)
+        key.flush
         @remote.upload(@secret_key, key.path) if @remote
         capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path} -d", sudo: false)
         @remote.run("rm #{key.path}") if @remote

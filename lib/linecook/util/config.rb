@@ -29,6 +29,9 @@ module Linecook
       provisioner: {
         default_provider: :chefzero,
         default_image: :base_image,
+        chefzero: {
+          audit: true
+        }
       },
       image: {
         provider: {
@@ -77,7 +80,9 @@ module Linecook
 
     def setup
       FileUtils.mkdir_p(LINECOOK_HOME)
-      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG)) unless File.exist?(DEFAULT_CONFIG_PATH)
+      config = {}
+      config.merge!(YAML.load(File.read(DEFAULT_CONFIG_PATH))) if File.exist?(DEFAULT_CONFIG_PATH)
+      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG.deep_merge(config)))
       check_perms if platform == 'darwin'
     end
 
