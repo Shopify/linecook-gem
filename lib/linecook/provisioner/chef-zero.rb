@@ -39,7 +39,7 @@ module Linecook
       config = Linecook.config
 
       chef_config = config[:chef]
-      chef_config.merge!(node_name: "linecook-#{SecureRandom.uuid}",
+      chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}",
                          chef_server_url: ChefProvisioner::Config.server)
       # FIXME: sort out cache copying here for concurrent builds of different refs
       Chefdepartie.run(background: true, config: chef_config, cache: Cache.path)
