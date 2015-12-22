@@ -58,7 +58,9 @@ module Linecook
         ebs: {
           hvm: true,
           size: 10,
-          region: 'us-east-1'
+          region: 'us-east-1',
+          copy_regions: [],
+          account_ids: []
         }
       },
       roles: {

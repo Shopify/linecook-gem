@@ -14,13 +14,15 @@ module Linecook
     class EBS
       include Executor
 
-      def initialize(hvm: true, size: 10, region: 'us-east-1')
+      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [])
         @hvm = hvm
         @size = size
-        @region = region
+        @region = region || @ebs_config[:region]
+        @copy_regions = copy_regions
+        @account_ids = account_ids
       end
 
-      def package(image, type: nil)
+      def package(image, type: nil, ami: nil)
         @image = image
         @type = type
         setup_remote unless instance_id
@@ -28,6 +30,7 @@ module Linecook
         execute("tar -C #{@mountpoint} -cpf - . | sudo tar -C #{@root} -xpf -")
         finalize
         snapshot
+        create_ami if ami
       end
 
     private
@@ -44,7 +47,7 @@ module Linecook
         execute("echo \"UUID=\\\"$(blkid -o value -s UUID #{@rootdev})\\\" /               ext4            defaults  1 2\" > /tmp/fstab")
         execute("mv /tmp/fstab #{@root}/etc/fstab")
         chroot_exec('apt-get update')
-        chroot_exec('apt-get install -y --force-yes grub-pc grub-legacy-ec2')
+        chroot_exec('apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2')
         chroot_exec('update-grub')
         execute("grub-install --root-directory=#{@root} $(echo #{@rootdev} | sed \"s/[0-9]*//g\")") if @hvm
       end
@@ -126,8 +129,65 @@ module Linecook
           client.describe_volumes(volume_ids: [@volume_id]).volumes.first.state
         end
         resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{File.basename(@image)}")
-        tag(resp.snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm.to_s)
+        @snapshot_id = resp.snapshot_id
+        tag(@snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm.to_s)
         client.delete_volume(volume_id: @volume_id)
+      end
+
+      def create_ami
+        options = {
+          name: File.basename(@image),
+          virtualization_type: @hvm ? 'hvm' : 'paravirtual',
+          architecture: 'x86_64', # fixme
+          root_device_name: @hvm ? '/dev/xvda1' : '/dev/xvda', # fixme when does this need to be sda?
+          block_device_mappings: [{
+            device_name: @hvm ? '/dev/xvda1' : '/dev/xvda',
+            ebs: {
+              snapshot_id: @snapshot_id,
+              volume_size: @size,
+              volume_type: @hvm ? 'gp2' : 'standard', # fixme: support iops?
+              delete_on_termination: true,
+            }
+          }]
+        }
+        options.merge!({sriov_net_support: 'simple'}) if @hvm
+
+        resp = client.register_image(**options)
+        @ami_id = resp.image_id
+
+        wait_for_state('available', 300) do
+          client.describe_images(image_ids: [@ami_id]).images.first.state
+        end
+
+        amis = [@ami_id]
+
+        @copy_regions.each do |region|
+          puts "Copying #{@ami_id} to #{region}"
+          resp = client.copy_image({
+            source_region: @region,
+            source_image_id: @ami_id,
+            name: File.basename(@image),
+            description: "Copy of #{File.basename(@image)}",
+          })
+          ami = resp.image_id
+          puts "Waiting for #{ami} to become available in #{region}"
+          wait_for_state('available', 1800) do
+            client.describe_images(image_ids: [ami]).images.first.state
+          end
+          amis << ami
+        end
+
+        if @accounts_ids.length > 0
+          amis.each do |ami|
+            puts "Updating account permissions for #{ami}"
+            client.modify_image_attribute({
+              operation_type: 'add',
+              attribute: 'launchPermission',
+              image_id: ami,
+              user_ids: @account_ids
+            })
+          end
+        end
       end
 
       def free_device
