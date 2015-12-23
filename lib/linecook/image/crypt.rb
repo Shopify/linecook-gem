@@ -1,11 +1,13 @@
-require 'base64'
-require 'encryptor'
 require 'tempfile'
+
+require 'rbnacl/libsodium'
+require 'rbnacl'
 
 require 'linecook/image/manager'
 require 'linecook/util/executor'
 require 'linecook/util/config'
 
+require 'encryptor'
 module Linecook
   class Crypto
     include Executor
