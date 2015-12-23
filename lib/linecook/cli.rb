@@ -66,8 +66,8 @@ class Image < Thor
   desc 'package', 'Package image'
   method_option :name, type: :string, required: false, banner: 'NAME', desc: 'Name of the image to snapshot. Specify this, or --latest with a type', aliases: '-n'
   method_option :latest, type: :boolean, default: false, desc: 'Use the latest build for type', aliases: '-l'
+  method_option :ami, type: :boolean, default: true, desc: 'Create an ami', aliases: '-a'
   method_option :type, type: :string, required: false, banner: 'ID', desc: 'Type of image to snapshot', aliases: '-t'
-  method_option :ami, type: :boolean, default: false, desc: 'Create an ami', aliases: '-a'
   def package
     fail 'Must specify image name or use latest' unless options[:name] || options[:latest]
     fail 'Must specify type if specifying latest' if options[:latest] && !options[:type]

@@ -2,6 +2,7 @@ require 'net/http'
 require 'open-uri'
 require 'timeout'
 require 'tmpdir'
+require 'securerandom'
 
 require 'linecook/util/ssh'
 require 'linecook/util/executor'
@@ -17,13 +18,14 @@ module Linecook
       def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [])
         @hvm = hvm
         @size = size
-        @region = region || @ebs_config[:region]
+        @region = region
         @copy_regions = copy_regions
         @account_ids = account_ids
       end
 
       def package(image, type: nil, ami: nil)
         @image = image
+        @name = "#{File.basename(image).gsub('.squashfs', '').gsub('-decrypted', '')}-#{SecureRandom.hex(4)}"
         @type = type
         setup_remote unless instance_id
         prepare
@@ -86,10 +88,13 @@ module Linecook
         @availability_zone ||= metadata('placement/availability-zone')
       end
 
-      def client
+      def client(region: nil)
+        @client = nil if region
         @client ||= begin
+          region ||= @region
+          puts "Using AWS region #{region} for following request"
           credentials = Aws::Credentials.new(Linecook.config[:aws][:access_key], Linecook.config[:aws][:secret_key])
-          Aws::EC2::Client.new(region: @region, credentials: credentials)
+          Aws::EC2::Client.new(region: region, credentials: credentials)
         end
       end
 
@@ -128,20 +133,27 @@ module Linecook
         wait_for_state('available', 120) do
           client.describe_volumes(volume_ids: [@volume_id]).volumes.first.state
         end
-        resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{File.basename(@image)}")
+        resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{@name}")
         @snapshot_id = resp.snapshot_id
-        tag(@snapshot_id, Name: 'Linecook snapshot', image: File.basename(@image), hvm: @hvm.to_s)
+        tag(@snapshot_id, Name: 'Linecook snapshot', image: @name, hvm: @hvm.to_s)
         client.delete_volume(volume_id: @volume_id)
       end
 
       def create_ami
+
+        puts "Waiting for snapshot #{@snapshot_id} to be completed"
+        wait_for_state('completed', 900) do
+          client.describe_snapshots(snapshot_ids: [@snapshot_id]).snapshots.first.state
+        end
+
+        puts "Registering an AMI with for #{@name}"
         options = {
-          name: File.basename(@image),
+          name: @name,
           virtualization_type: @hvm ? 'hvm' : 'paravirtual',
           architecture: 'x86_64', # fixme
-          root_device_name: @hvm ? '/dev/xvda1' : '/dev/xvda', # fixme when does this need to be sda?
+          root_device_name: '/dev/sda1', # fixme when does this need to be sda?
           block_device_mappings: [{
-            device_name: @hvm ? '/dev/xvda1' : '/dev/xvda',
+            device_name: '/dev/sda1',
             ebs: {
               snapshot_id: @snapshot_id,
               volume_size: @size,
@@ -159,28 +171,30 @@ module Linecook
           client.describe_images(image_ids: [@ami_id]).images.first.state
         end
 
-        amis = [@ami_id]
+        amis = {
+          @region => @ami_id
+        }
 
         @copy_regions.each do |region|
           puts "Copying #{@ami_id} to #{region}"
-          resp = client.copy_image({
+          resp = client(region: region).copy_image({
             source_region: @region,
             source_image_id: @ami_id,
-            name: File.basename(@image),
-            description: "Copy of #{File.basename(@image)}",
+            name: @name,
+            description: "Copy of #{@name}",
           })
           ami = resp.image_id
           puts "Waiting for #{ami} to become available in #{region}"
           wait_for_state('available', 1800) do
             client.describe_images(image_ids: [ami]).images.first.state
           end
-          amis << ami
+          amis[region] = ami
         end
 
-        if @accounts_ids.length > 0
-          amis.each do |ami|
-            puts "Updating account permissions for #{ami}"
-            client.modify_image_attribute({
+        unless @account_ids.empty?
+          amis.each do |region, ami|
+            puts "Updating account permissions for #{ami} in #{region}"
+            client(region: region).modify_image_attribute({
               operation_type: 'add',
               attribute: 'launchPermission',
               image_id: ami,
