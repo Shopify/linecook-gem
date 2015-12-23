@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.homepage    =
     'http://rubygems.org/gems/linecook'
   s.license = 'MIT'
-  s.add_runtime_dependency 'xhyve-ruby', ['=0.0.5']
+  s.add_runtime_dependency 'xhyve-ruby', ['=0.0.6']
   s.add_runtime_dependency 'sshkit', ['=1.7.1']
   s.add_runtime_dependency 'sshkey', ['=1.8.0']
   s.add_runtime_dependency 'octokit', ['=4.2.0']
@@ -28,8 +28,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ejson',  ['1.0.1']
   s.add_runtime_dependency 'aws-sdk',  ['2.2.4']
   s.add_runtime_dependency 'rubyzip',  ['1.1.7']
-  s.add_runtime_dependency 'rbnacl',  ['3.2.0']
-  s.add_runtime_dependency 'rbnacl-libsodium',  ['1.0.7']
   s.add_development_dependency 'rake', ['=10.4.2']
   s.add_development_dependency 'simplecov', ['=0.10.0']
   s.add_development_dependency 'rspec', ['=3.2.0']
