@@ -7,7 +7,6 @@ require 'linecook/image/manager'
 require 'linecook/util/executor'
 require 'linecook/util/config'
 
-require 'encryptor'
 module Linecook
   class Crypto
     include Executor
@@ -25,33 +24,44 @@ module Linecook
       encrypt_file(image_path)
     end
 
-    def encrypt_file(source, dest: nil, keypath: nil)
+    def encrypt_file(source, dest: nil)
       dest ||= "/tmp/#{File.basename(source)}"
-      Tempfile.open('key') do |key|
-        key.write(@secret_key)
-        key.flush
-        capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path}", sudo: false)
-      end
+      File.write(dest, box.encrypt(File.read(source)))
       dest
     end
 
-    def decrypt_file(source, dest: nil, keypath: nil)
+    def decrypt_file(source, dest: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
-      Tempfile.open('key') do |key|
-        key.write(@secret_key)
-        key.flush
-        @remote.upload(@secret_key, key.path) if @remote
-        capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path} -d", sudo: false)
-        @remote.run("rm #{key.path}") if @remote
+      if @remote
+        Tempfile.open('key') do |key|
+          @remote.upload(@secret_key, key.path) 
+          capture("openssl enc -#{CIPHER} -out #{dest} -in #{source} -kfile #{key.path} -d", sudo: false)
+          @remote.run("rm #{key.path}") if @remote
+        end
+      else
+        File.write(dest, box.decrypt(File.read(source)))
       end
       dest
     end
 
     def self.keygen
-      secret_key = Base64.encode64(OpenSSL::Random.random_bytes(KEY_BYTES)).unpack('H*').first
+       RbNaCl::Random.random_bytes(RbNaCl::SecretBox.key_bytes).unpack('H*').first
     end
 
   private
+
+# sudo apt-get install -y -force-yes build-essential ruby ruby-dev
+# sudo gem install rbnacl nbnacl-libsodium
+
+#ruby -e 'require "base64"; require "rbnacl/libsodium"; box = RbNaCl::SimpleBox.from_secret_key(["c1b44affe71692bc8a09920932be5270d699a282a5386a3534855275938e1d62"].pack("H*")); puts Base64.encode64(box.encrypt("hi"))'
+
+    def self.decryptor_script
+#ruby -e 'require "rbnacl/libsodium"; box = RbNaCl::SimpleBox.from_secret_key(["c1b44affe71692bc8a09920932be5270d699a282a5386a3534855275938e1d62"].pack("H*")); box.encrypt("hi")'
+    end
+
+    def self.box
+      @box ||= RbNaCl::SimpleBox.from_secret_key([@secret_key].pack('H*'))
+    end
 
     def load_key
       @secret_key = Linecook.config[:aeskey]
