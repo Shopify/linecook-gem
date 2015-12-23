@@ -79,8 +79,15 @@ module Linecook
       def build
         if stale
           puts 'Regenerating cookbook cache'
-          Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
-          Chefdepartie.stop
+          begin
+            Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
+          rescue
+            puts 'Cache tainted, rebuilding completely'
+            FileUtils.rm_rf(CACHE_PATH)
+            Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
+          ensure
+            Chefdepartie.stop
+          end
           write_stamp
           unlock
         end

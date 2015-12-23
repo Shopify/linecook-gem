@@ -26,13 +26,14 @@ module Linecook
       def package(image, type: nil, ami: nil)
         @image = image
         @source = File.basename(@image)
-        @name = "#{@file}-#{SecureRandom.hex(4)}"
+        @name = "#{@source}-#{SecureRandom.hex(4)}"
         @type = type
         setup_image
         prepare
         execute("tar -C #{@mountpoint} -cpf - . | sudo tar -C #{@root} -xpf -")
         finalize
         snapshot
+        cleanup
         create_ami if ami
       end
 
@@ -55,6 +56,11 @@ module Linecook
         execute("grub-install --root-directory=#{@root} $(echo #{@rootdev} | sed \"s/[0-9]*//g\")") if @hvm
       end
 
+      def cleanup
+        execute("umount #{@image}")
+        execute("rm -f #{@image}")
+        execute("rmdir #{@mountpoint}")
+      end
 
       def chroot_exec(command)
         execute("mount -o bind /dev #{@root}/dev")
@@ -136,7 +142,7 @@ module Linecook
         end
         resp = client.create_snapshot(volume_id: @volume_id, description: "Snapshot of #{@name}")
         @snapshot_id = resp.snapshot_id
-        tag(@snapshot_id, Name: 'Linecook snapshot', image: @name, hvm: @hvm.to_s)
+        tag(@snapshot_id, Name: "Linecook snapshot for #{@source}", type: @type, image: @name, hvm: @hvm.to_s)
         client.delete_volume(volume_id: @volume_id)
       end
 
@@ -204,9 +210,10 @@ module Linecook
           end
         end
 
-        amis.each do |_, ami|
-          tag(@ami, source: @source, name: @name, type: @type, hvm: @hvm.to_s)
+        amis.each do |region, ami|
+          tag(ami, region: region, source: @source, name: @name, type: @type, hvm: @hvm.to_s)
         end
+        amis
       end
 
       def free_device
@@ -321,7 +328,8 @@ module Linecook
       end
 
       def tag(id, **kwargs)
-        resp = client.create_tags(resources: [id], tags: kwargs.map{ |k,v| {key: k, value: v } })
+        puts "Will tag #{id} with #{kwargs}"
+        resp = client(region: kwargs[:region]).create_tags(resources: [id], tags: kwargs.map{ |k,v| {key: k.to_s, value: v.to_s } })
       end
 
       def key_pair
