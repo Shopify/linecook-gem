@@ -1,8 +1,5 @@
 require 'tempfile'
 
-require 'rbnacl/libsodium'
-require 'rbnacl'
-
 require 'linecook/image/manager'
 require 'linecook/util/executor'
 require 'linecook/util/config'
