@@ -25,9 +25,10 @@ module Linecook
 
       def package(image, type: nil, ami: nil)
         @image = image
-        @name = "#{File.basename(image).gsub('.squashfs', '').gsub('-decrypted', '')}-#{SecureRandom.hex(4)}"
+        @source = File.basename(@image)
+        @name = "#{@file}-#{SecureRandom.hex(4)}"
         @type = type
-        setup_remote unless instance_id
+        setup_image
         prepare
         execute("tar -C #{@mountpoint} -cpf - . | sudo tar -C #{@root} -xpf -")
         finalize
@@ -202,6 +203,10 @@ module Linecook
             })
           end
         end
+
+        amis.each do |_, ami|
+          tag(@ami, source: @source, name: @name, type: @type, hvm: @hvm.to_s)
+        end
       end
 
       def free_device
@@ -238,11 +243,21 @@ module Linecook
         return nil
       end
 
-      def setup_remote
-        start_node
+      def setup_image
         path = "/tmp/#{File.basename(@image)}"
-        @remote.run("wget '#{Linecook::ImageManager.url(File.basename(@image), type: @type)}' -nv -O #{path}")
-        @image = Linecook::Crypto.new(remote: @remote).decrypt_file(path)
+        if instance_id
+          return if File.exists?(@image)
+          Linecook::Downloader.download(image_url, path)
+          @image = path
+        else
+          start_node
+          @remote.run("wget '#{image_url}' -nv -O #{path}")
+          @image = Linecook::Crypto.new(remote: @remote).decrypt_file(path)
+        end
+      end
+
+      def image_url
+        @url ||= Linecook::ImageManager.url(File.basename(@image), type: @type)
       end
 
       def start_node
