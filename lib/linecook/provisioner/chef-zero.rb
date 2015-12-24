@@ -63,7 +63,7 @@ module Linecook
       def path
         @cache_path ||= begin
           FileUtils.mkdir_p(CACHE_PATH)
-          cache_path = Dir.mktmpdir
+          cache_path = Dir.mktmpdir('linecook-chef-cache')
           build
           copy(cache_path)
           cache_path
