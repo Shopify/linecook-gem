@@ -179,7 +179,9 @@ module Linecook
     end
 
     def proxy_command(proxy)
-      ssh_command = "ssh #{"-i #{@keyfile}" if @keyfile} #{proxy.username}@#{proxy.hostname} nc %h %p"
+      ssh_command = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no #{"-i #{@keyfile}" if @keyfile} #{proxy.username}@#{proxy.hostname} nc %h %p"
+
+
       Net::SSH::Proxy::Command.new(ssh_command)
     end
   end
