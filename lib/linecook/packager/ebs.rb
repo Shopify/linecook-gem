@@ -289,6 +289,9 @@ module Linecook
         @remote.upload("exec shutdown -h 60 'Delayed shutdown started'", '/tmp/delay-shutdown')
         execute('mv /tmp/delay-shutdown /etc/init/delay-shutdown.conf') # ubuntism is ok, since the temporary host can always be ubuntu
         execute('start delay-shutdown')
+        # Install crypto deps
+        execute('apt-get install -y --force-yes build-essential ruby ruby-dev')
+        execute('gem install rbnacl rbnacl-libsodium')
       end
 
       def find_ami
