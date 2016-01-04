@@ -170,7 +170,7 @@ module Linecook
       @host ||= begin
         host = SSHKit::Host.new(user: @username, hostname: @hostname)
         host.password = @password if @password
-        opts = {paranoid: false}
+        opts = {paranoid: Net::SSH::Verifiers::Null.new}
         opts.merge!({ proxy: @proxy }) if @proxy
         opts.merge!({ keys: [@keyfile], auth_methods: %w(publickey password) }) if @keyfile
         host.ssh_options = opts
