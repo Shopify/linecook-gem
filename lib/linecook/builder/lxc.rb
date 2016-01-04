@@ -42,8 +42,10 @@ module Linecook
 
       def stop(clean: false, destroy: true)
         setup_dirs
-        cexec("sudo userdel -r -f #{Linecook::Build::USERNAME}") if @remote
-        execute("lxc-stop #{container_str} -k") if running?
+        if running?
+          cexec("sudo userdel -r -f #{Linecook::Build::USERNAME}") if @remote
+          execute("lxc-stop #{container_str} -k") if running?
+        end
         unmount(clean: clean) if destroy
       end
 
