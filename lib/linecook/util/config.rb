@@ -14,6 +14,7 @@ module Linecook
     extend self
     attr_reader :config
 
+    LXC_MIN_VERSION = '1.1.4'
     CONFIG_PATH = File.join(Dir.pwd, 'linecook.yml').freeze # File.expand_path('../../../config/config.yml', __FILE__)
     SECRETS_PATH = File.join(Dir.pwd, 'secrets.ejson').freeze # File.expand_path('../../../config/config.yml', __FILE__)
     LINECOOK_HOME = File.expand_path('~/.linecook').freeze
@@ -81,24 +82,6 @@ module Linecook
       end
     end
 
-    def setup
-      FileUtils.mkdir_p(LINECOOK_HOME)
-      config = {}
-      config.merge!(YAML.load(File.read(DEFAULT_CONFIG_PATH))) if File.exist?(DEFAULT_CONFIG_PATH)
-      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG.deep_merge(config)))
-      check_perms if platform == 'darwin'
-    end
-
-    def check_perms
-      fix_perms if (File.stat(Xhyve::BINARY_PATH).uid != 0 || !File.stat(Xhyve::BINARY_PATH).setuid?)
-    end
-
-    def fix_perms
-      puts "Xhyve requires root until https://github.com/mist64/xhyve/issues/60 is resolved\nPlease enter your sudo password to setuid on the xhyve binary"
-      system("sudo chown root #{Xhyve::BINARY_PATH}")
-      system("sudo chmod +s #{Xhyve::BINARY_PATH}")
-    end
-
     def load_config
       @config ||= begin
         config_path = ENV['LINECOOK_CONFIG_PATH'] || CONFIG_PATH
@@ -118,6 +101,32 @@ module Linecook
       else
         fail 'Linux and OS X are the only supported systems'
       end
+    end
+
+  private
+
+    def setup
+      FileUtils.mkdir_p(LINECOOK_HOME)
+      config = {}
+      config.merge!(YAML.load(File.read(DEFAULT_CONFIG_PATH))) if File.exist?(DEFAULT_CONFIG_PATH)
+      File.write(DEFAULT_CONFIG_PATH, YAML.dump(DEFAULT_CONFIG.deep_merge(config)))
+      check_perms if platform == 'darwin'
+      check_lxc if platform == 'linux'
+    end
+
+    def check_lxc
+      version = `sudo lxc-info --version`
+      fail "lxc too old (<#{LXC_MIN_VERSION}) or not present" unless Gem::Version.new(version) >= Gem::Version.new(LXC_MIN_VERSION)
+    end
+
+    def check_perms
+      fix_perms if (File.stat(Xhyve::BINARY_PATH).uid != 0 || !File.stat(Xhyve::BINARY_PATH).setuid?)
+    end
+
+    def fix_perms
+      puts "Xhyve requires root until https://github.com/mist64/xhyve/issues/60 is resolved\nPlease enter your sudo password to setuid on the xhyve binary"
+      system("sudo chown root #{Xhyve::BINARY_PATH}")
+      system("sudo chmod +s #{Xhyve::BINARY_PATH}")
     end
 
     setup
