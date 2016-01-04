@@ -22,7 +22,7 @@ module Linecook
 
     def encrypt_file(source, dest: nil)
       dest ||= "/tmp/#{File.basename(source)}"
-      File.write(dest, box.encrypt(File.read(source)))
+      File.write(dest, box.encrypt(IO.binread(source)))
       dest
     end
 
@@ -35,7 +35,7 @@ module Linecook
           @remote.run("rm #{key.path}")
         end
       else
-        File.write(dest, box.decrypt(File.read(source)))
+        File.write(dest, box.decrypt(IO.binread(source)))
       end
       dest
     end
