@@ -36,19 +36,15 @@ module Linecook
         unmount unless running?
       end
 
-      def pause
-        execute("lxc-stop #{container_str} -k") if running?
-      end
-
       def resume
         execute("lxc-start #{container_str} -d") unless running?
       end
 
-      def stop(clean: false)
+      def stop(clean: false, destroy: true)
         setup_dirs
         cexec("sudo userdel -r -f #{Linecook::Build::USERNAME}") if @remote
         execute("lxc-stop #{container_str} -k") if running?
-        unmount(clean: clean)
+        unmount(clean: clean) if destroy
       end
 
       def ip
