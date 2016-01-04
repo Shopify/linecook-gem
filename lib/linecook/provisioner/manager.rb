@@ -12,7 +12,7 @@ module Linecook
     def bake(name: nil, tag: nil, id: nil, snapshot: nil, upload: nil, package: nil, build: nil, keep: nil, clean: nil)
       build_agent = Linecook::Build.new(name, tag: tag, id: id, image: image(name))
       provider(name).provision(build_agent, name) if build
-      snapshot = build_agent.snapshot(save: true) if snapshot ||  upload || package
+      snapshot = build_agent.snapshot(save: true, resume: true unless clean) if snapshot ||  upload || package
       Linecook::ImageManager.upload(snapshot, type: build_agent.type) if upload || package
       Linecook::Packager.package(snapshot, type: build_agent.type) if package
     rescue => e

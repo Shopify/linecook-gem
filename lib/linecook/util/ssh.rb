@@ -88,7 +88,7 @@ module Linecook
 
     def forward(local, remote:nil)
       remote ||= local
-      opts = { password: @password }
+      opts = { password: @password, paranoid: Net::SSH::Verifiers::Null.new }
       opts.merge!({ proxy: @proxy }) if @proxy
       @session = Net::SSH.start(@hostname, @username, opts)
       @session.forward.remote(local, '127.0.0.1', remote)

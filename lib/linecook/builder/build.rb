@@ -25,11 +25,11 @@ module Linecook
       @ssh ||= Linecook::SSH.new(@container.ip, username: USERNAME, proxy: Linecook::Builder.ssh, keyfile: Linecook::SSH.private_key, setup: false)
     end
 
-    def snapshot(save: false)
+    def snapshot(save: false, resume: false)
       path = "/tmp/#{@id}-#{Time.now.to_i}.squashfs"
       @container.pause
       Linecook::Builder.ssh.run("sudo mksquashfs #{@container.root} #{path} -wildcards -e 'usr/src' 'var/lib/apt/lists/archive*' 'var/cache/apt/archives'") # FIXME make these excludes dynamic based on OS
-      @container.resume
+      @container.resume if resume
       path = if save
         local_path = File.join(Linecook::ImageManager::IMAGE_PATH, File.basename(path))
         Linecook::Builder.ssh.download(path, local: local_path)

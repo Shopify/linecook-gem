@@ -114,6 +114,7 @@ class Build < Thor
 
   desc 'snapshot', 'Take a snapshot of the build with NAME'
   method_option :name, type: :string, required: true, banner: 'ROLE_NAME', desc: 'Name of the role to build', aliases: '-n'
+  method_option :resume, type: :boolean, default: false,  desc: 'Resume the build after snapshotting it', aliases: '-r'
   def snapshot
     build = Linecook::Build.new(name, '')
     build.snapshot(save: true)
