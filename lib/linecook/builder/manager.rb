@@ -58,7 +58,7 @@ module Linecook
       kparams = {}
 
       Tempfile.open('cmdline') do |f|
-        ssh.download('/proc/cmdline', f.path)
+        ssh.download('/proc/cmdline', local: f.path)
         File.read(f.path).split(/\s+/).each do |param|
           k,v = param.split('=')
           kparams[k] = v
