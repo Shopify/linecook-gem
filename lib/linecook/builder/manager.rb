@@ -52,5 +52,26 @@ module Linecook
         fail "Cannot find supported backend for #{Config.platform}"
       end
     end
+
+    def increase_loop_devices
+      kparams = {}
+      File.read('/proc/cmdline').split(/\s+/).each do |param|
+        k,v = param.split('=')
+        kparams[k] = v
+      end
+
+      if loops = kparams['max_loop']
+        current =  ssh.capture('ls -1 /dev | grep loop')
+        last_loop = current.lines.length
+        to_create = loops.to_i - last_loop
+
+        to_create.times do |count|
+          index = last_loop + count
+          ssh.run("mknod -m660 /dev/loop#{index} b 7 #{index}")
+          ssh.run("chown root:disk /dev/loop#{index}")
+        end
+      end
+    end
+
   end
 end
