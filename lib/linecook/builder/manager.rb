@@ -21,6 +21,7 @@ module Linecook
     def start
       return if running?
       backend.start
+      increase_loop_devices
     end
 
     def ssh
@@ -55,9 +56,13 @@ module Linecook
 
     def increase_loop_devices
       kparams = {}
-      File.read('/proc/cmdline').split(/\s+/).each do |param|
-        k,v = param.split('=')
-        kparams[k] = v
+
+      Tempfile.open('cmdline') do |f|
+        ssh.download('/proc/cmdline', f.path)
+        File.read(f.path).split(/\s+/).each do |param|
+          k,v = param.split('=')
+          kparams[k] = v
+        end
       end
 
       if loops = kparams['max_loop']
