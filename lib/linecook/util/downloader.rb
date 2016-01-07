@@ -1,5 +1,6 @@
 require 'open-uri'
 require 'fileutils'
+require 'securerandom'
 
 require 'zip'
 require 'ruby-progressbar'
@@ -13,7 +14,7 @@ module Linecook
     def self.download(url, path, encrypted: false)
       acquire_lock(path)
       FileUtils.mkdir_p(File.dirname(path))
-      cryptfile = "#{File.basename(path)}-encrypted"
+      cryptfile = "#{File.basename(path)}-encrypted-#{SecureRandom.hex(4)}"
       destination = encrypted ? File.join('/tmp', cryptfile) : path
       File.open(destination, 'w') do |f|
         pbar = ProgressBar.create(title: File.basename(path), total: nil)
