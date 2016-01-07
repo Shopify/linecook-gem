@@ -199,7 +199,7 @@ eos
         @source_path = Linecook::ImageManager.fetch(@source_image, profile: :public)
         if @remote
           dest = "#{File.basename(@source_path)}"
-          unless test("[ -f #{dest} ]") && capture("shasum #{dest}").split.first && `shasum #{@source_path}`.split.first
+          unless test("[ -f #{dest} ]") && capture("shasum #{dest}").split.first == `shasum #{@source_path}`.split.first
             @remote.upload(@source_path, dest)
           end
           @image_path = dest
