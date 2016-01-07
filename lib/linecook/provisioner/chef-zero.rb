@@ -103,8 +103,10 @@ module Linecook
           puts 'Regenerating cookbook cache'
           begin
             Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
-          rescue
+          rescue => e
+            puts e.message
             puts 'Cache tainted, rebuilding completely'
+            Chefdepartie.stop
             FileUtils.rm_rf(CACHE_PATH)
             Chefdepartie.run(background: true, config: Linecook.config[:chef], cache: CACHE_PATH)
           ensure
