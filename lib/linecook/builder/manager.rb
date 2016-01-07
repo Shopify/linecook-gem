@@ -57,12 +57,9 @@ module Linecook
     def increase_loop_devices
       kparams = {}
 
-      Tempfile.open('cmdline') do |f|
-        ssh.download('/proc/cmdline', local: f.path)
-        File.read(f.path).split(/\s+/).each do |param|
-          k,v = param.split('=')
-          kparams[k] = v
-        end
+      ssh.capture('cat /proc/cmdline').split(/\s+/).each do |param|
+        k,v = param.split('=')
+        kparams[k] = v
       end
 
       if loops = kparams['max_loop']
@@ -72,8 +69,8 @@ module Linecook
 
         to_create.times do |count|
           index = last_loop + count
-          ssh.run("mknod -m660 /dev/loop#{index} b 7 #{index}")
-          ssh.run("chown root:disk /dev/loop#{index}")
+          ssh.run("[ ! -e /dev/loop#{index} ] && sudo mknod -m660 /dev/loop#{index} b 7 #{index}")
+          ssh.run("sudo chown root:disk /dev/loop#{index}")
         end
       end
     end
