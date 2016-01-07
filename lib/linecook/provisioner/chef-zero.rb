@@ -33,6 +33,10 @@ module Linecook
       FileUtils.rm_rf(Cache.path)
     end
 
+    def chef_port
+      ChefProvisioner::Config.server.split(':')[-1].to_i
+    end
+
     private
 
     def setup
@@ -42,13 +46,8 @@ module Linecook
       chef_config = config[:chef]
       chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}",
                          chef_server_url: ChefProvisioner::Config.server)
-      # FIXME: sort out cache copying here for concurrent builds of different refs
       Chefdepartie.run(background: true, config: chef_config, cache: Cache.path)
       chef_config
-    end
-
-    def chef_port
-      ChefProvisioner::Config.server.split(':')[-1].to_i
     end
 
     # Required in order to have multiple builds run on different refs
@@ -57,6 +56,7 @@ module Linecook
       PIDFILE = File.join(CACHE_PATH, 'pid')
       STAMPFILE = File.join(CACHE_PATH, 'stamp')
       STALE_THRESHOLD = 86400 # one day in seconds
+      WAIT_TIMEOUT = 60 # time to wait for port to become available again
 
       extend self
 
@@ -66,11 +66,33 @@ module Linecook
           cache_path = Dir.mktmpdir('linecook-chef-cache')
           build
           copy(cache_path)
+          wait_for_close
           cache_path
         end
       end
 
     private
+
+      def wait_for_close
+        attempts = 0
+        while attempts < WAIT_TIMEOUT
+          begin
+            Timeout::timeout(1) do
+              begin
+                s = TCPSocket.new('127.0.0.1', Linecook::Chef.chef_port)
+                s.close
+                return true
+              rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+                return false
+              end
+            end
+          rescue Timeout::Error
+            puts "Port #{Linecook::Chef.chef_port} is still in use"
+            sleep(1)
+          end
+          attempts += 0
+        end
+      end
 
       def copy(cache_path)
         FileUtils.copy_entry(CACHE_PATH, cache_path, preserve: true)
