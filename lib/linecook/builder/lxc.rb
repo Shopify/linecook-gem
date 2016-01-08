@@ -160,13 +160,15 @@ module Linecook
 
       def unmount(clean: false)
         @socket_dirs.each { |sock| execute("umount #{sock}") }
-        source = capture("mount | grep #{@lower_dir} | awk '{print $1}'") if clean
+        source = capture("mount | grep #{@lower_dir} | grep squashfs | awk '{print $1}'") if clean
         execute("umount #{@root}")
         execute("umount #{@upper_base}")
         execute("umount #{@lower_dir}")
         execute("rmdir #{@lower_dir}")
         execute("rmdir #{@upper_base}")
-        FileUtils.rm_f(source) if clean
+
+        # Clean up the source image, but only if it's not mounted elsewhre
+        FileUtils.rm_f(source) if clean && capture("mount | grep #{source} || true").strip.empty?
       end
 
       def bridge_network
@@ -198,9 +200,13 @@ eos
       def setup_image
         @source_path = Linecook::ImageManager.fetch(@source_image, profile: :public)
         if @remote
-          dest = "#{File.basename(@source_path)}"
+          name = File.basename(@source_path)
+          dest = "/u/linecook/images/#{name}"
           unless test("[ -f #{dest} ]") && capture("shasum #{dest}").split.first == `shasum #{@source_path}`.split.first
-            @remote.upload(@source_path, dest)
+            tmp = "/tmp/#{name}-#{SecureRandom.hex(4)}"
+            @remote.run("sudo mkdir -p #{File.dirname(dest)}")
+            @remote.upload(@source_path, tmp)
+            @remote.run("sudo mv #{tmp} #{dest}")
           end
           @image_path = dest
         else
