@@ -204,7 +204,7 @@ eos
           dest = "/u/linecook/images/#{name}"
           unless test("[ -f #{dest} ]") && capture("shasum #{dest}").split.first == `shasum #{@source_path}`.split.first
             tmp = "/tmp/#{name}-#{SecureRandom.hex(4)}"
-            @remote.run("sudo mkdir -p #{dest}")
+            @remote.run("sudo mkdir -p #{File.dirname(dest)}")
             @remote.upload(@source_path, tmp)
             @remote.run("sudo mv #{tmp} #{dest}")
           end
