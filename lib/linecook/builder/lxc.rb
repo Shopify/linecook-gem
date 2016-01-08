@@ -168,7 +168,7 @@ module Linecook
         execute("rmdir #{@upper_base}")
 
         # Clean up the source image, but only if it's not mounted elsewhre
-        FileUtils.rm_f(source) if clean && capture("mount | grep #{source}").strip.empty?
+        FileUtils.rm_f(source) if clean && capture("mount | grep #{source} || true").strip.empty?
       end
 
       def bridge_network
