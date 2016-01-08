@@ -160,7 +160,7 @@ module Linecook
 
       def unmount(clean: false)
         @socket_dirs.each { |sock| execute("umount #{sock}") }
-        source = capture("mount | grep #{@lower_dir} | awk '{print $1}'") if clean
+        source = capture("mount | grep #{@lower_dir} | grep squashfs | awk '{print $1}'") if clean
         execute("umount #{@root}")
         execute("umount #{@upper_base}")
         execute("umount #{@lower_dir}")
