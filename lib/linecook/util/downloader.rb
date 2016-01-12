@@ -9,7 +9,7 @@ require 'linecook/image/crypt'
 
 module Linecook
   module Downloader
-    LOCK_WAIT_TIMEOUT = 120
+    LOCK_WAIT_TIMEOUT = 180
 
     def self.download(url, path, encrypted: false)
       acquire_lock(path)
