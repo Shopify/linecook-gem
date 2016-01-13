@@ -69,9 +69,9 @@ module Linecook
       puts "Started with #{guest.mac}... waiting for network"
       @ip = guest.ip
       @pid = guest.pid
-      unless @ip
-        @guest.kill
-        fail 'Could not acquire ip' 
+      if @ip.nil? && !guest.nil?
+        guest.kill
+        fail 'Could not acquire ip'
       end
       puts "Network acquired, IP is #{@ip}"
       save_run_spec
