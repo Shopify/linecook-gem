@@ -27,6 +27,7 @@ Linecook is intended to serve 3 main purposes:
 USAGE
 --------
 
+```
 linecook bake SPEC [-n --name `NAME`] [-s --snapshot]
   --name - The name
   --snapshot - Snapshot the resulting image for later use
@@ -59,8 +60,7 @@ linecook image
   find [`REGEX`] - list available remote images filtered by an optional regex
 
 linecook ami [`image`] [-r --region `REGION1,REGION2`] [-x --xen-type `PV|HVM`] [-r --root-size GIGABYTES] - create an AMI (Amazon Machine Image) from a snapshot.
-
-
+```
 
 CONFIGURATION
 -------------
