@@ -115,7 +115,7 @@ module Linecook
     end
 
     def check_lxc
-      version = `sudo lxc-info --version`
+      version = `lxc-info --version`
       fail "lxc too old (<#{LXC_MIN_VERSION}) or not present" unless Gem::Version.new(version) >= Gem::Version.new(LXC_MIN_VERSION)
     end
 
