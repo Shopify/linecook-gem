@@ -37,10 +37,16 @@ class Image < Thor
     puts Linecook::ImageManager.latest(id, **opts)
   end
 
-  desc 'fetch IMAGE_NAME', 'Fetch an image by name'
-  method_options name: :string
-  def fetch(name)
-    Linecook::ImageManager.fetch(name)
+  desc 'fetch', 'Fetch and decrypt an image'
+  method_option :type, type: :string, required: false, banner: 'ID', desc: 'Type of image to list', aliases: '-t'
+  method_option :latest, type: :boolean, default: false, desc: 'Use the latest build for type', aliases: '-l'
+  method_option :name, type: :string, required: false, banner: 'NAME', desc: 'Name of the image to snapshot. Specify this, or --latest with a type', aliases: '-n'
+  def fetch
+    fail 'Must specify image name or use latest' unless options[:name] || options[:latest]
+    fail 'Must specify type if specifying latest' if options[:latest] && !options[:type]
+
+    image = options[:latest] ? { type: options[:type], name: :latest } : options[:name].to_sym
+    Linecook::ImageManager.fetch(image)
   end
 
   desc 'clean', 'Clean up cached images'
