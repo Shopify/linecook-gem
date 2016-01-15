@@ -13,6 +13,7 @@ module Linecook
       Linecook::Builder.start
       @type = tag ? "#{name}-#{tag}" : name
       @id = id ? "#{@type}-#{id}" : @type
+      @id = @id.gsub(/[\/|\.]/,'_')
       @image = image || Linecook.config[:provisioner][:default_image]
       @container = Linecook::Lxc::Container.new(name: @id, image: @image, remote: Linecook::Builder.ssh)
     end
