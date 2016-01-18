@@ -247,7 +247,7 @@ module Linecook
             return prefix if dev =~ /^#{prefix}/
           end
         end
-        return nil
+        return prefixes.first
       end
 
       def setup_image
