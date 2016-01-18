@@ -254,7 +254,7 @@ module Linecook
         path = "/tmp/#{File.basename(@image)}"
         if instance_id
           return if File.exists?(@image)
-          Linecook::Downloader.download(image_url, path)
+          Linecook::Downloader.download(image_url, path, encrypted: true)
           @image = path
         else
           start_node
