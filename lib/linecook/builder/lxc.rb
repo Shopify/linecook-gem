@@ -124,10 +124,9 @@ module Linecook
 
       def write_config
         path = if @remote
-                 file = Tempfile.new('lxc-config')
-                 file.close
-                 @remote.upload(@config, file.path)
-                 file.path
+                 file = "/tmp/lxc-config-#{SecureRandom.hex(4)}"
+                 @remote.upload(@config, file)
+                 file
                else
                  file = Tempfile.new('lxc-config')
                  file.write(@config)
