@@ -15,7 +15,7 @@ module Linecook
       provider(name).provision(build_agent, name) if build
       snapshot = build_agent.snapshot(save: true, resume: resume) if snapshot ||  upload || package
       Linecook::ImageManager.upload(snapshot, type: build_agent.type) if upload || package
-      Linecook::Packager.package(snapshot, type: build_agent.type) if package
+      Linecook::Packager.package(snapshot, type: build_agent.type, ami: true) if package
     rescue => e
       puts e.message
       puts e.backtrace
