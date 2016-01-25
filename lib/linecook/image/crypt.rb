@@ -29,11 +29,10 @@ module Linecook
     def decrypt_file(source, dest: nil)
       dest ||= "/tmp/#{File.basename(source)}-decrypted"
       if @remote
-        Tempfile.open('key') do |key|
-          @remote.upload(decryptor_script(source, dest), key.path)
-          @remote.run("bash #{key.path}")
-          @remote.run("rm #{key.path}")
-        end
+        script = "/tmp/decrypt-#{SecureRandom.hex(4)}"
+        @remote.upload(decryptor_script(source, dest), script)
+        @remote.run("bash #{script}")
+        @remote.run("rm #{script}")
       else
         File.write(dest, box.decrypt(IO.binread(source)))
       end

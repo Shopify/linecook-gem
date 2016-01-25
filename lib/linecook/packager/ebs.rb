@@ -174,6 +174,8 @@ module Linecook
         resp = client.register_image(**options)
         @ami_id = resp.image_id
 
+        puts "Waiting for #{@ami_id} to become available"
+
         wait_for_state('available', 300) do
           client.describe_images(image_ids: [@ami_id]).images.first.state
         end
