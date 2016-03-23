@@ -20,6 +20,10 @@ module Linecook
     LINECOOK_HOME = File.expand_path('~/.linecook').freeze
     DEFAULT_CONFIG_PATH = File.join(LINECOOK_HOME, 'config.yml').freeze
     DEFAULT_CONFIG = {
+      chef: {
+        data_bag_path: ['../data_bags'],
+        chef_repo_path: '..'
+      },
       builder: {
         image: :live_image,
         name: 'builder',
