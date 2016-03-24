@@ -52,7 +52,7 @@ module Linecook
 
     # Required in order to have multiple builds run on different refs
     module Cache
-      CACHE_PATH = File.join(Linecook::Config::LINECOOK_HOME, 'chefcache').freeze
+      CACHE_PATH = File.join(Linecook::Config::LINECOOK_HOME, "#{Digest::SHA1.hexdigest(Dir.pwd)[0...7]}-chefcache").freeze
       PIDFILE = File.join(CACHE_PATH, 'pid')
       STAMPFILE = File.join(CACHE_PATH, 'stamp')
       STALE_THRESHOLD = 86400 # one day in seconds
