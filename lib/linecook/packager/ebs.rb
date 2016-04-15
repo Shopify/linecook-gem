@@ -184,37 +184,50 @@ module Linecook
           @region => @ami_id
         }
 
-        @copy_regions.each do |region|
-          puts "Copying #{@ami_id} to #{region}"
-          resp = client(region: region).copy_image({
-            source_region: @region,
-            source_image_id: @ami_id,
-            name: @name,
-            description: "Copy of #{@name}",
-          })
-          ami = resp.image_id
-          puts "Waiting for #{ami} to become available in #{region}"
-          wait_for_state('available', 1800) do
-            client.describe_images(image_ids: [ami]).images.first.state
-          end
-          amis[region] = ami
-        end
+        unless copy_regions.empty?
+          puts "Copying #{@ami_id} from #{@region} to #{@copy_regions.join(", ")}"
 
-        unless @account_ids.empty?
-          amis.each do |region, ami|
-            puts "Updating account permissions for #{ami} in #{region}"
-            client(region: region).modify_image_attribute({
-              operation_type: 'add',
-              attribute: 'launchPermission',
-              image_id: ami,
-              user_ids: @account_ids
+          @copy_regions.each do |region|
+            resp = client(region: region).copy_image({
+              source_region: @region,
+              source_image_id: @ami_id,
+              name: @name,
+              description: "Copy of #{@name}",
             })
+            amis[region] = resp.image_id
+            puts "- #{region} (#{amis[region]})"
+          end
+
+          wait_for_state(true, 1800) do |ticks|
+            ami_states = amis.keys.zip(client.describe_images(image_ids: amis.values).images.map(&:state))
+            available, unavailable = amis.keys.partition { |region, _| ami_states[region] == 'available' }
+
+            if ticks % 30 == 0
+              unavailable_in = (unavailable.empty?) ? "none" : unavailable.join(", ")
+              puts "[#{ticks}s] Currently available in #{available.join(', ')}; waiting on #{unavailable_in}"
+            end
+
+            unavailable.empty?
+          end
+          puts "Done copying - in #{amis.keys.join(', ')}"
+
+          unless @account_ids.empty?
+            amis.each do |region, ami|
+              puts "Updating account permissions for #{ami} in #{region}"
+              client(region: region).modify_image_attribute({
+                operation_type: 'add',
+                attribute: 'launchPermission',
+                image_id: ami,
+                user_ids: @account_ids
+              })
+            end
+          end
+
+          amis.each do |region, ami|
+            tag(ami, region: region, source: @source, name: @name, type: @type, hvm: @hvm.to_s)
           end
         end
 
-        amis.each do |region, ami|
-          tag(ami, region: region, source: @source, name: @name, type: @type, hvm: @hvm.to_s)
-        end
         amis
       end
 
@@ -363,7 +376,7 @@ module Linecook
         attempts = 0
         state = nil
         while attempts < timeout && state != desired
-          state = yield
+          state = yield attempts
           attempts += 1
           sleep(1)
         end
