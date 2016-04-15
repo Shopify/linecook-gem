@@ -21,39 +21,38 @@ Enabling a means of simple local image development with high production efficacy
 Simplifying continuous integration and testing of linux systems.
 .RE
 .SH USAGE
-.TP
-linecook bake SPEC [\-n \-\-name \fB\fCNAME\fR] [\-s \-\-snapshot]
-\-\-name \- The name
-\-\-snapshot \- Snapshot the resulting image for later use
-\-\-encrypt \- Encrypt the snapshot using the configured key. Implies snapshot.
-\-\-upload \- Upload the resulting image to the configured destination. Implies snapshot.
-\-\-all \- Snapshot, encrypt, and upload the resulting image.
-Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
-.TP
-linecook builder
-start \- start a new builder
-stop \- stop a running builder
-info \- show the info about the builder
-ip \- show the builder's ip
-.TP
-linecook config
-setup
-check \- validate config
-show
-.TP
-linecook build
-list
-info NAME
-ip NAME
-stop NAME
-.TP
-linecook image
-list
-keygen \- generate a new secret key for image encryption
-fetch
-find [\fB\fCREGEX\fR] \- list available remote images filtered by an optional regex
 .PP
-linecook ami [\fB\fCimage\fR] [\-r \-\-region \fB\fCREGION1,REGION2\fR] [\-x \-\-xen\-type \fB\fCPV|HVM\fR] [\-r \-\-root\-size GIGABYTES] \- create an AMI (Amazon Machine Image) from a snapshot.
+.RS
+.nf
+linecook bake SPEC [\-n \-\-name `NAME`] [\-s \-\-snapshot]
+  \-\-name \- The name
+  \-\-snapshot \- Snapshot the resulting image for later use
+  \-\-encrypt \- Encrypt the snapshot using the configured key. Implies snapshot.
+  \-\-upload \- Upload the resulting image to the configured destination. Implies snapshot.
+  \-\-all \- Snapshot, encrypt, and upload the resulting image.
+  Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
+linecook builder
+  start \- start a new builder
+  stop \- stop a running builder
+  info \- show the info about the builder
+  ip \- show the builder's ip
+linecook config
+  setup
+  check \- validate config
+  show
+linecook build
+  list
+  info NAME
+  ip NAME
+  stop NAME
+linecook image
+  list
+  keygen \- generate a new secret key for image encryption
+  fetch
+  find [`REGEX`] \- list available remote images filtered by an optional regex
+linecook ami [`image`] [\-r \-\-region `REGION1,REGION2`] [\-x \-\-xen\-type `PV|HVM`] [\-r \-\-root\-size GIGABYTES] \- create an AMI (Amazon Machine Image) from a snapshot.
+.fi
+.RE
 .SH CONFIGURATION
 .PP
 Describe config file here once it's been determined
