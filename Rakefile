@@ -19,6 +19,7 @@ task build: [:man_generate] do
 end
 
 begin
+  require 'bundler/gem_tasks'
   require 'rspec/core/rake_task'
 
   RSpec::Core::RakeTask.new(:spec)

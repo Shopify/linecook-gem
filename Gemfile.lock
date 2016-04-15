@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    linecook-gem (0.6.6)
+    linecook-gem (0.6.7)
       activesupport (= 4.2.5)
       aws-sdk (= 2.2.4)
       chef-provisioner (= 0.1.4)
@@ -85,7 +85,7 @@ GEM
     chef-provisioner (0.1.4)
       chef-api (= 0.5.0)
       erubis (= 2.7)
-    chef-zero (4.4.2)
+    chef-zero (4.6.1)
       ffi-yajl (~> 2.2)
       hashie (>= 2.0, < 4.0)
       mixlib-log (~> 1.3)
@@ -97,7 +97,7 @@ GEM
       cityhash (~> 0.8.1)
       librarian-chef (~> 0.0.4)
     cityhash (0.8.1)
-    coderay (1.1.0)
+    coderay (1.1.1)
     colorize (0.7.7)
     diff-lcs (1.2.5)
     docile (1.1.5)
@@ -113,8 +113,10 @@ GEM
     highline (1.7.8)
     i18n (0.7.0)
     ipaddress (0.8.0)
-    jmespath (1.1.3)
+    jmespath (1.2.4)
+      json_pure (>= 1.8.1)
     json (1.8.3)
+    json_pure (1.8.3)
     librarian (0.1.2)
       highline
       thor (~> 0.15)
@@ -130,15 +132,18 @@ GEM
     method_source (0.8.2)
     mime-types (3.0)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2015.1120)
+    mime-types-data (3.2016.0221)
     minitar (0.5.4)
-    minitest (5.8.3)
-    mixlib-authentication (1.3.0)
+    minitest (5.8.4)
+    mixlib-authentication (1.4.0)
       mixlib-log
+      rspec-core (~> 3.2)
+      rspec-expectations (~> 3.2)
+      rspec-mocks (~> 3.2)
     mixlib-cli (1.5.0)
     mixlib-config (2.2.1)
     mixlib-log (1.6.0)
-    mixlib-shellout (2.2.5)
+    mixlib-shellout (2.2.6)
     multi_json (1.11.2)
     multipart-post (2.0.0)
     net-scp (1.2.1)
@@ -152,7 +157,7 @@ GEM
     net-telnet (0.1.1)
     octokit (4.2.0)
       sawyer (~> 0.6.0, >= 0.5.3)
-    ohai (8.8.1)
+    ohai (8.14.0)
       chef-config (>= 12.5.0.alpha.1, < 13)
       ffi (~> 1.9)
       ffi-yajl (~> 2.2)
@@ -161,7 +166,7 @@ GEM
       mixlib-config (~> 2.0)
       mixlib-log
       mixlib-shellout (~> 2.0)
-      rake (~> 10.1)
+      plist (~> 3.1)
       systemu (~> 2.6.4)
       wmi-lite (~> 1.0)
     opener (0.1.0)
@@ -201,11 +206,11 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    serverspec (2.29.1)
+    serverspec (2.31.1)
       multi_json
       rspec (~> 3.0)
       rspec-its
-      specinfra (~> 2.48)
+      specinfra (~> 2.53)
     sfl (2.2)
     simplecov (0.10.0)
       docile (~> 1.1.0)
@@ -213,9 +218,9 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.0)
     slop (3.6.0)
-    specinfra (2.50.1)
+    specinfra (2.56.1)
       net-scp
-      net-ssh (>= 2.7, < 3.1)
+      net-ssh (>= 2.7, < 4.0)
       net-telnet
       sfl
     sshkey (1.8.0)
@@ -247,4 +252,4 @@ DEPENDENCIES
   simplecov (= 0.10.0)
 
 BUNDLED WITH
-   1.11.0.pre.1
+   1.11.2
