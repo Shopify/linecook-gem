@@ -26,7 +26,7 @@ module Linecook
       },
       builder: {
         image: :live_image,
-        name: 'builder',
+        name: 'builder.linecook.local',
         home: '/u/lxc',
         username: 'ubuntu',
         password: 'ubuntu'

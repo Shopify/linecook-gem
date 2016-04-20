@@ -44,7 +44,7 @@ module Linecook
       config = Linecook.config
 
       chef_config = config[:chef]
-      chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}",
+      chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}.linecook.local",
                          chef_server_url: ChefProvisioner::Config.server)
       Chefdepartie.run(background: true, config: chef_config, cache: Cache.path)
       chef_config
