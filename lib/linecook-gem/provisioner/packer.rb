@@ -3,7 +3,7 @@ require 'tempfile'
 require 'mkmf'
 require 'fileutils'
 
-require 'linecook/util/executor'
+require 'linecook-gem/util/executor'
 
 
 module Linecook

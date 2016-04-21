@@ -2,9 +2,9 @@ require 'tempfile'
 
 require 'rbnacl/libsodium'
 
-require 'linecook/image/manager'
-require 'linecook/util/executor'
-require 'linecook/util/config'
+require 'linecook-gem/image/manager'
+require 'linecook-gem/util/executor'
+require 'linecook-gem/util/config'
 
 module Linecook
   class Crypto

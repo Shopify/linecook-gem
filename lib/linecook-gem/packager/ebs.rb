@@ -4,8 +4,8 @@ require 'timeout'
 require 'tmpdir'
 require 'securerandom'
 
-require 'linecook/util/ssh'
-require 'linecook/util/executor'
+require 'linecook-gem/util/ssh'
+require 'linecook-gem/util/executor'
 
 require 'aws-sdk'
 

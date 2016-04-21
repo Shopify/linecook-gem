@@ -1,6 +1,6 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'linecook/version'
+require 'linecook-gem/version'
 
 Gem::Specification.new do |s|
   s.name        = 'linecook-gem'
@@ -19,8 +19,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'sshkit', ['=1.7.1']
   s.add_runtime_dependency 'sshkey', ['=1.8.0']
   s.add_runtime_dependency 'octokit', ['=4.2.0']
-  s.add_runtime_dependency 'chefdepartie', ['=0.1.1']
-  s.add_runtime_dependency 'chef-provisioner', ['=0.1.4']
+  s.add_runtime_dependency 'chefdepartie', ['=0.1.2']
+  s.add_runtime_dependency 'chef-provisioner', ['=0.1.11']
   s.add_runtime_dependency 'activesupport', ['=4.2.5']
   s.add_runtime_dependency 'ruby-progressbar', ['=1.7.5']
   s.add_runtime_dependency 'ipaddress', ['=0.8.0']
@@ -32,6 +32,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rbnacl-libsodium',  ['1.0.7']
   s.add_development_dependency 'rake', ['=10.4.2']
   s.add_development_dependency 'simplecov', ['=0.10.0']
-  s.add_development_dependency 'rspec', ['=3.2.0']
+  s.add_development_dependency 'rspec', ['=3.4.0']
   s.add_development_dependency 'md2man', ['4.0.0']
 end

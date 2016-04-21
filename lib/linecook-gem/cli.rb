@@ -1,5 +1,5 @@
 require 'thor'
-require 'linecook'
+require 'linecook-gem'
 
 class Crypto < Thor
   desc 'keygen', 'Generate AES key for securing images'

@@ -12,6 +12,7 @@ module Linecook
       chef_config = setup
       role_config = Linecook.config[:roles][role.to_sym]
       script = ChefProvisioner::Bootstrap.generate(
+        profile: role_config[:profile] || false,
         node_name: chef_config[:node_name],
         chef_version: chef_config[:version] || nil,
         first_boot: {

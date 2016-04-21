@@ -1,9 +1,9 @@
 require 'securerandom'
 require 'fileutils'
 
-require 'linecook/builder/build'
-require 'linecook/provisioner/chef-zero'
-require 'linecook/provisioner/packer'
+require 'linecook-gem/builder/build'
+require 'linecook-gem/provisioner/chef-zero'
+require 'linecook-gem/provisioner/packer'
 
 module Linecook
   module Baker

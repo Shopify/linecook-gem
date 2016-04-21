@@ -1,6 +1,6 @@
 require 'octokit'
 
-require 'linecook/util/config'
+require 'linecook-gem/util/config'
 
 module Linecook
   module GithubManager

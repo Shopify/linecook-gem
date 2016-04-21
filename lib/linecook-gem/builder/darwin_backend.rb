@@ -1,5 +1,5 @@
 require 'securerandom'
-require 'linecook/image/manager'
+require 'linecook-gem/image/manager'
 # FIXME: read config values from config file
 #  - create cache loopback image
 #   - dd, based on config file.
