@@ -1,4 +1,4 @@
-require 'linecook/packager/ebs'
+require 'linecook-gem/packager/ebs'
 
 module Linecook
   module Packager

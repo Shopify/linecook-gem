@@ -1,8 +1,8 @@
 require 'fileutils'
 
-require 'linecook/image/s3'
-require 'linecook/image/github'
-require 'linecook/image/crypt'
+require 'linecook-gem/image/s3'
+require 'linecook-gem/image/github'
+require 'linecook-gem/image/crypt'
 
 module Linecook
   module ImageManager

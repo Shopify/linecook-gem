@@ -5,7 +5,7 @@ require 'securerandom'
 require 'zip'
 require 'ruby-progressbar'
 
-require 'linecook/image/crypt'
+require 'linecook-gem/image/crypt'
 
 module Linecook
   module Downloader

@@ -1,5 +1,5 @@
 require 'forwardable'
-require 'linecook/builder/manager'
+require 'linecook-gem/builder/manager'
 
 module Linecook
   class Build
