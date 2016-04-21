@@ -4,6 +4,7 @@ require 'linecook/util/config'
 require 'linecook/util/executor'
 require 'tempfile'
 require 'ipaddress'
+require 'linecook/packager/ebs'
 
 module Linecook
   module Lxc
@@ -20,6 +21,7 @@ module Linecook
         @root = File.join(@home, @name, 'rootfs')
         config = { utsname: name, rootfs: @root }
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
+        @ebs_config = Linecook.config[:packager][:ebs]
         @source_image = image || :base_image
       end
 
@@ -132,6 +134,10 @@ module Linecook
                  file.write(@config)
                  file.close
                  file.path
+        end
+        if @ebs_config[:src_ami] && @remote
+          @src_ami_attached_volume = Linecook::Packager::EBS.new(@ebs_config).mount_src_ami if @ebs_config[:src_ami]
+          execute("lxc-device add #{container_str} #{@src_ami_attached_volume}1") if @ebs_config[:src_ami]
         end
         execute("mv #{path} #{File.join(@home, @name, 'config')}")
       end

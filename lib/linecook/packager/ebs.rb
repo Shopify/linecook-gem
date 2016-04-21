@@ -15,12 +15,13 @@ module Linecook
     class EBS
       include Executor
 
-      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [])
+      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [], src_ami: nil)
         @hvm = hvm
         @size = size
         @region = region
         @copy_regions = copy_regions
         @account_ids = account_ids
+        @src_ami = src_ami
       end
 
       def package(image, type: nil, ami: nil)
@@ -35,6 +36,10 @@ module Linecook
         snapshot
         cleanup
         create_ami if ami
+      end
+
+      def mount_src_ami
+        create_volume(volume_type: 'gp2')
       end
 
     private
@@ -100,16 +105,28 @@ module Linecook
         @client ||= begin
           region ||= @region
           puts "Using AWS region #{region} for following request"
-          credentials = Aws::Credentials.new(Linecook.config[:aws][:access_key], Linecook.config[:aws][:secret_key])
+          if Linecook.config[:aws][:access_key]
+            credentials = Aws::Credentials.new(Linecook.config[:aws][:access_key], Linecook.config[:aws][:secret_key])
+          else
+            credentials = Aws::InstanceProfileCredentials.new
+          end
           Aws::EC2::Client.new(region: region, credentials: credentials)
         end
       end
 
-      def create_volume
+      def get_snapshot_id
+        @snapshot_id = client.describe_images({
+          image_ids: [@src_ami]
+        }).images[0].block_device_mappings[0].ebs.snapshot_id
+      end
+
+      def create_volume(snapshot_id: nil, volume_type: 'standard')
+        snapshot_id = get_snapshot_id if @src_ami
         resp = client.create_volume({
           size: @size,
           availability_zone: availability_zone, # required
-          volume_type: "standard", # accepts standard, io1, gp2
+          volume_type: volume_type, # accepts standard, io1, gp2
+          snapshot_id: snapshot_id
         })
 
         @volume_id = resp.volume_id
