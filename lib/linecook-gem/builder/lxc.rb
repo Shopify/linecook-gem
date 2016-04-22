@@ -20,8 +20,10 @@ module Linecook
         @root = File.join(@home, @name, 'rootfs')
         @tmp = tmp
         @tmpmount = "linecook_#{name}"
-        config = { utsname: name, rootfs: @root,  }
-        config.merge!(mount: {entry: "#{capture("mktemp -d --tmpdir=/#{@tmp} #{@tmpmount}XXXXXXX").strip} #{@tmp} none bind,create=dir 0 0"}) if @tmp
+        config = { utsname: name, rootfs: @root, mount: {} }
+        config[:mount][:entry] ||= []
+        config[:mount][:entry] << '/sys/fs/cgroup sys/fs/cgroup none bind 0 0'
+        config[:mount][:entry] << "#{capture("mktemp -d --tmpdir=/#{@tmp} #{@tmpmount}XXXXXXX").strip} #{@tmp} none bind,create=dir 0 0" if @tmp
 
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
         @source_image = image || :base_image
@@ -232,7 +234,7 @@ eos
       extend self
       DEFAULT_LXC_CONFIG = {
         include: '/usr/share/lxc/config/ubuntu.common.conf',
-        aa_profile: 'lxc-container-default-with-nesting',
+        aa_profile: 'unconfined', #'lxc-container-default-with-nesting',
         arch: 'x86.64',
         utsname: 'linecook',
         rootfs: '/u/lxc/linecook/rootfs',
@@ -242,21 +244,21 @@ eos
           link: 'lxcbr0'
         },
         mount: {
-          auto: 'cgroup',
+          auto: ['cgroup', 'proc:rw', 'sys:rw']
+        },
+        cap: {
+          drop: ''
         },
         cgroup: {
           devices: {
-            allow: [
-              'b 7:* rwm',
-              'c 10:237 rwm'
-            ]
+            allow: 'a'
           }
         }
       }.freeze
 
       def generate(**kwargs)
         cfg = []
-        flatten(DEFAULT_LXC_CONFIG.merge(kwargs || {})).each do |k, v|
+        flatten(DEFAULT_LXC_CONFIG.deep_merge(kwargs || {})).each do |k, v|
           [v].flatten.each do |val|
             cfg << "lxc.#{k}=#{val}"
           end
