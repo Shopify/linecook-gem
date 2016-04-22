@@ -12,13 +12,17 @@ module Linecook
       include Executor
       MAX_WAIT = 60
       attr_reader :config, :root
-      def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local, bridge: false)
+      def initialize(name: 'linecook', home: '/u/lxc', image: nil, remote: :local, bridge: false, tmp: nil)
         @name = name
         @home = home
         @bridge = bridge
         @remote = remote == :local ? false : remote
         @root = File.join(@home, @name, 'rootfs')
-        config = { utsname: name, rootfs: @root }
+        @tmp = tmp
+        @tmpmount = "linecook_#{name}"
+        config = { utsname: name, rootfs: @root,  }
+        config.merge!(mount: {entry: "#{capture("mktemp -d --tmpdir=/#{@tmp} #{@tmpmount}XXXXXXX").strip} #{@tmp} none bind,create=dir 0 0"}) if @tmp
+
         @config = Linecook::Lxc::Config.generate(config) # FIXME read link from config
         @source_image = image || :base_image
       end
@@ -165,6 +169,7 @@ module Linecook
         execute("umount #{@lower_dir}")
         execute("rmdir #{@lower_dir}")
         execute("rmdir #{@upper_base}")
+        execute("rm -rf /#{@tmp}/#{@tmpmount}*") if @tmp && !@tmp.empty? && @tmp != '/'
 
         # Clean up the source image, but only if it's not mounted elsewhre
         FileUtils.rm_f(source) if clean && capture("mount | grep #{source} || true").strip.empty?
@@ -237,7 +242,7 @@ eos
           link: 'lxcbr0'
         },
         mount: {
-          auto: 'cgroup'
+          auto: 'cgroup',
         },
         cgroup: {
           devices: {
