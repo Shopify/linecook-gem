@@ -5,7 +5,7 @@ module Linecook
     def backend
       config = Linecook.config[:builder]
       images = Linecook.config[:image][:images]
-      Linecook::Lxc::Container.new(name: config[:name], home: config[:home], image: config[:image], bridge: true)
+      Linecook::Lxc::Container.new(name: config[:name], home: config[:home], image: config[:image], bridge: true, tmp: Linecook.config[:tmp])
     end
   end
 end
