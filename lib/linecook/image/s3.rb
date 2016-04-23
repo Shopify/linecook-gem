@@ -54,7 +54,7 @@ module Linecook
     def client
       @client ||= begin
         Aws.config[:credentials] = Aws::Credentials.new(Linecook.config[:aws][:access_key], Linecook.config[:aws][:secret_key])
-        Aws.config[:region] = 'us-east-1'
+        Aws.config[:region] = Linecook.config[:packager][:ebs][:region]
         Aws::S3::Client.new
       end
     end

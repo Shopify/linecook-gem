@@ -4,7 +4,6 @@ require 'linecook/image/manager'
 #  - create cache loopback image
 #   - dd, based on config file.
 
-
 module Linecook
   module OSXBuilder
     extend self
@@ -71,7 +70,7 @@ module Linecook
       @pid = guest.pid
       unless @ip
         @guest.kill
-        fail 'Could not acquire ip' 
+        fail 'Could not acquire ip'
       end
       puts "Network acquired, IP is #{@ip}"
       save_run_spec
@@ -80,7 +79,7 @@ module Linecook
 
     # get and mount the iso
     def get_iso
-      @image_path = Linecook::ImageManager.fetch(:live_iso, profile: :public)
+      @image_path = Linecook::ImageManager.fetch(:live_iso, profile: Linecook.config[:image][:images][:live_iso][:profile])
     end
 
     def mount_iso
