@@ -40,7 +40,7 @@ module Linecook
     private
 
     def setup
-      ChefProvisioner::Config.setup(client: 'linecook', listen: 'localhost')
+      ChefProvisioner::Config.setup(client: 'linecook', listen: '127.0.0.1')
       config = Linecook.config
 
       chef_config = config[:chef]
