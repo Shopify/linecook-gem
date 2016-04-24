@@ -15,12 +15,13 @@ module Linecook
     class EBS
       include Executor
 
-      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [])
+      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [], encrypted_ami: false)
         @hvm = hvm
         @size = size
         @region = region
         @copy_regions = copy_regions
         @account_ids = account_ids
+        @encrypted_ami = encrypted_ami
       end
 
       def package(image, type: nil, ami: nil)
@@ -109,7 +110,8 @@ module Linecook
         resp = client.create_volume({
           size: @size,
           availability_zone: availability_zone, # required
-          volume_type: "standard", # accepts standard, io1, gp2
+          volume_type: @hvm ? 'gp2' : 'standard', # accepts standard, io1, gp2
+          encrypted: @encrypted_ami,
         })
 
         @volume_id = resp.volume_id

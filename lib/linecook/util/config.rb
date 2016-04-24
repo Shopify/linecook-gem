@@ -65,7 +65,8 @@ module Linecook
           size: 10,
           region: 'us-east-1',
           copy_regions: [],
-          account_ids: []
+          account_ids: [],
+          encrypted_ami: false
         }
       },
       roles: {
