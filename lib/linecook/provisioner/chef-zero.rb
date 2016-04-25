@@ -17,7 +17,8 @@ module Linecook
         first_boot: {
           run_list: role_config[:run_list]
         },
-        audit: Linecook.config[:provisioner][:chefzero][:audit]
+        audit: Linecook.config[:provisioner][:chefzero][:audit],
+        bootstrap_file: Linecook.config[:chef][:bootstrap_file]
       )
 
       puts "Establishing connection to build..."
