@@ -54,6 +54,7 @@ module Linecook
         chroot_exec('apt-get update')
         chroot_exec('bash -c "DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2"')
         chroot_exec('update-grub')
+        chroot_exec('rm -rf /etc/ssh/ssh_host_*')
         execute("grub-install --root-directory=#{@root} $(echo #{@rootdev} | sed \"s/[0-9]*//g\")") if @hvm
       end
 
