@@ -57,7 +57,7 @@ module Linecook
     def increase_loop_devices
       kparams = {}
 
-      ssh.capture('cat /proc/cmdline').split(/\s+/).each do |param|
+      ssh.capture('sudo cat /proc/cmdline').split(/\s+/).each do |param|
         k,v = param.split('=')
         kparams[k] = v
       end
