@@ -197,7 +197,7 @@ eos
       end
 
       def setup_image
-        @source_path = Linecook::ImageManager.fetch(@source_image, profile: :public)
+        @source_path = Linecook::ImageManager.fetch(@source_image, profile: Linecook.config[:image][:images][:live_iso][:profile])
         if @remote
           name = File.basename(@source_path)
           dest = "/u/linecook/images/#{name}"

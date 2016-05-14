@@ -17,7 +17,8 @@ module Linecook
         first_boot: {
           run_list: role_config[:run_list]
         },
-        audit: Linecook.config[:provisioner][:chefzero][:audit]
+        audit: Linecook.config[:provisioner][:chefzero][:audit],
+        bootstrap_file: Linecook.config[:chef][:bootstrap_file]
       )
 
       puts "Establishing connection to build..."
@@ -26,7 +27,7 @@ module Linecook
       build.ssh.upload(script, '/tmp/chef_bootstrap')
       build.ssh.run('[ -f /var/chef/cache/chef-client-running.pid ] && sudo rm -f /var/chef/cache/chef-client-running.pid || true')
       build.ssh.run("sudo hostname #{chef_config[:node_name]}")
-      build.ssh.run('sudo bash /tmp/chef_bootstrap')
+      build.ssh.run('sudo bash /tmp/chef_bootstrap 2>&1 | tee /tmp/chef-client.log')
       build.ssh.run('sudo rm -rf /etc/chef')
       build.ssh.stop_forwarding
       Chefdepartie.stop
@@ -40,11 +41,11 @@ module Linecook
     private
 
     def setup
-      ChefProvisioner::Config.setup(client: 'linecook', listen: 'localhost')
+      ChefProvisioner::Config.setup(client: 'linecook', listen: '127.0.0.1')
       config = Linecook.config
 
       chef_config = config[:chef]
-      chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}",
+      chef_config.merge!(node_name: "linecook-#{SecureRandom.hex(4)}.linecook.local",
                          chef_server_url: ChefProvisioner::Config.server)
       Chefdepartie.run(background: true, config: chef_config, cache: Cache.path)
       chef_config
@@ -52,7 +53,7 @@ module Linecook
 
     # Required in order to have multiple builds run on different refs
     module Cache
-      CACHE_PATH = File.join(Linecook::Config::LINECOOK_HOME, 'chefcache').freeze
+      CACHE_PATH = File.join(Linecook::Config::LINECOOK_HOME, "#{Digest::SHA1.hexdigest(Dir.pwd)[0...7]}-chefcache").freeze
       PIDFILE = File.join(CACHE_PATH, 'pid')
       STAMPFILE = File.join(CACHE_PATH, 'stamp')
       STALE_THRESHOLD = 86400 # one day in seconds

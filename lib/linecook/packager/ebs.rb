@@ -15,12 +15,13 @@ module Linecook
     class EBS
       include Executor
 
-      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [])
+      def initialize(hvm: true, size: 10, region: nil, copy_regions: [], account_ids: [], encrypted_ami: false)
         @hvm = hvm
         @size = size
         @region = region
         @copy_regions = copy_regions
         @account_ids = account_ids
+        @encrypted_ami = encrypted_ami
       end
 
       def package(image, type: nil, ami: nil)
@@ -51,8 +52,9 @@ module Linecook
         execute("echo \"UUID=\\\"$(blkid -o value -s UUID #{@rootdev})\\\" /               ext4            defaults  1 2\" > /tmp/fstab")
         execute("mv /tmp/fstab #{@root}/etc/fstab")
         chroot_exec('apt-get update')
-        chroot_exec('apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2')
+        chroot_exec('bash -c "DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2"')
         chroot_exec('update-grub')
+        chroot_exec('rm -rf /etc/ssh/ssh_host_*')
         execute("grub-install --root-directory=#{@root} $(echo #{@rootdev} | sed \"s/[0-9]*//g\")") if @hvm
       end
 
@@ -109,7 +111,8 @@ module Linecook
         resp = client.create_volume({
           size: @size,
           availability_zone: availability_zone, # required
-          volume_type: "standard", # accepts standard, io1, gp2
+          volume_type: @hvm ? 'gp2' : 'standard', # accepts standard, io1, gp2
+          encrypted: @encrypted_ami,
         })
 
         @volume_id = resp.volume_id

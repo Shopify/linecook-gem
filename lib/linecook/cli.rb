@@ -146,6 +146,7 @@ class Linecook::CLI < Thor
   method_option :clean, type: :boolean, default: false, desc: 'Clean up all build artifacts', aliases: '-c'
   method_option :build, type: :boolean, default: true, desc: 'Build the image', aliases: '-b'
   method_option :snapshot, type: :boolean, default: false, desc: 'Snapshot the resulting build to create an image', aliases: '-s'
+  method_option :ami, type: :boolean, default: false, desc: 'Create an ami. Implies --snapshot.', aliases: '-a'
   method_option :upload, type: :boolean, default: false, desc: 'Upload the resulting build. Implies --snapshot and --encrypt.', aliases: '-u'
   method_option :package, type: :boolean, default: false, desc: 'Package the resulting image. Implies --upload, --snapshot and --encrypt.', aliases: '-p'
   def bake
