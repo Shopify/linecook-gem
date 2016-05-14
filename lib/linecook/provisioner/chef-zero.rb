@@ -27,7 +27,7 @@ module Linecook
       build.ssh.upload(script, '/tmp/chef_bootstrap')
       build.ssh.run('[ -f /var/chef/cache/chef-client-running.pid ] && sudo rm -f /var/chef/cache/chef-client-running.pid || true')
       build.ssh.run("sudo hostname #{chef_config[:node_name]}")
-      build.ssh.run('sudo bash /tmp/chef_bootstrap')
+      build.ssh.run('sudo bash /tmp/chef_bootstrap 2>&1 | tee /tmp/chef-client.log')
       build.ssh.run('sudo rm -rf /etc/chef')
       build.ssh.stop_forwarding
       Chefdepartie.stop
