@@ -1,11 +1,16 @@
-require 'linecook-gem/packager/ebs'
+
+require 'linecook-gem/image'
+require 'linecook-gem/packager/packer'
+require 'kitchen/configurable'
+
 
 module Linecook
   module Packager
     extend self
 
-    def package(image, type: type, **args)
-      provider.package(image, type: type, **args)
+    def package(image)
+      image.fetch
+      provider.package(image)
     end
 
   private
@@ -13,8 +18,8 @@ module Linecook
       name = Linecook.config[:packager][:provider]
       config = Linecook.config[:packager][name]
       case name
-      when :ebs
-        Linecook::Packager::EBS.new(**config)
+      when :packer
+        Linecook::AmiPacker.new(**config)
       else
         fail "No packager implemented for for #{name}"
       end

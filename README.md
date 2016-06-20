@@ -1,141 +1,95 @@
-LINECOOK 1 "December 2015" Unix "User Manuals"
+LINECOOK 1 "June 2016" Unix "User Manuals"
 =======================================
 
 NAME
 ----
 
-linecook - Linux system image builder
+linecook - Linux system image builder based on test kitchen
 
 SYNOPSIS
 --------
-
-linecook setup - interactive setup
 
 linecook help [`COMMAND`]- for specific command help
 
 DESCRIPTION
 -----------
 
-Linecook builds system images utilizing overlayfs, squashfs, and linux containers via LXC. Currently, linecook only natively supports chef for provisioning, but using packer with a null resource, any of the mechanisms supported by packer are also supported by linecook.
+Linecook is a workflow tool that allows you to use test kitchen to build generic system images. Linecook works with arbitrary test-kitchen provisioners, and generations a neutral format that can be packaged into specific output formats.
 
-Linecook is intended to serve 3 main purposes:
+Currently, linecook supports the following test kitchen drivers:
 
-* Providing a simple, portable image building process that is useable both in baremetal and cloud deployments.
-* Enabling a means of simple local image development with high production efficacy on Linux and OS X.
-* Simplifying continuous integration and testing of linux systems.
+* kitchen-docker
+
+And linecook uses packer to generate output. It currently supports:
+
+* AMIs via packer's ebs\_chroot builder.
+ * The amis may also update a TXT record in a route53 zone once the build is complete
+* squashfs, a provider neutral format.
+
+Linecook builds may be saved and annotated according to the folliwng convention:
+
+* name - a descriptive name for the build, based on the name of the test kitchen suite.
+* group - an arbitrary grouping of suites, intended to group builds by branches.
+* tag - a numeric tag for a build, intended to increment. If 'latest' is specified when resolving a build, the latest uploaded build is used.
+
+These three attributes are composed to make a build id in a very simple manor:
+
+* name is always required
+* if group is specified, it will be joined with name using a '-' character.
+* if tag is specified, it will be joined with the name and the gorup using a '-' character.
+* For example, the resulting id for a base build on the master group, with id of '5' would be 'base-master-5'. If this is the latest build for the base-master group, 'base-master-latest' will resolve to this.
+
+If linecook uploads a build, it will always encrypt it using rbnacl.
 
 USAGE
 --------
 
+To test linecook builds locally, it is best to use test kitchen directly:
+
 ```
-linecook bake SPEC [-n --name `NAME`] [-s --snapshot]
-  --name - The name
-  --snapshot - Snapshot the resulting image for later use
-  --encrypt - Encrypt the snapshot using the configured key. Implies snapshot.
-  --upload - Upload the resulting image to the configured destination. Implies snapshot.
-  --all - Snapshot, encrypt, and upload the resulting image.
-  Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
-
-linecook builder
-  start - start a new builder
-  stop - stop a running builder
-  info - show the info about the builder
-  ip - show the builder's ip
-
-linecook config
-  setup
-  check - validate config
-  show
-
-linecook build
-  list
-  info NAME
-  ip NAME
-  stop NAME
-
-linecook image
-  list
-  keygen - generate a new secret key for image encryption
-  fetch
-  find [`REGEX`] - list available remote images filtered by an optional regex
-
-linecook ami [`image`] [-r --region `REGION1,REGION2`] [-x --xen-type `PV|HVM`] [-r --root-size GIGABYTES] - create an AMI (Amazon Machine Image) from a snapshot.
+bundle exec kitchen converge [SUITE NAME]
 ```
+
+Linecook uses 
+
 
 CONFIGURATION
 -------------
 
-Describe config file here once it's been determined
+See test kitchen's documentation for configuring suites and provisioners.
+
+Linecook supports configuration of packagers, but this is not yet documented as it may change. For now, just read the source code.
+
+Linecook will look for secrets in config.ejson
 
 PROVISIONERS
 ------------
 
-Linecook includes an embedded chef-zero server, and uses the [chef-provisioner](https://rubygems.org/gems/chef-provisioner) and [chefdepartie](https://rubygems.org/gems/chefdepartie) gems to have first-class support for local chef-zero builds.
+Currently only the docker driver is supported for provisioning. You must have docker installed to use this provisioner.
 
-However, if you're not using chef or don't want to use chef-zero, linecook can be used seamlessly with [packer](https://www.packer.io), and supports any of the Linux-based provisioners. This includes:
-
-* Chef-solo
-* Chef-client (with a real chef server)
-* Ansible
-* Puppet (masterless or server)
-* Salt
-* Plain old shell scripts
-
-See the packer documentation for how to configure these provisioners.
-
-To use a packerfile with linecook, just leave out the 'builder' section, or have the builder section be an empty array. You need only specify the 'provisioner' section, and other sections may cause errors. Linecook will automatically insert a null builder with the appropriate connection string for you.
-
-Linecook with packer is a powerful combination, as it allows you to leverage packer's 'null builder' to take advantage of all of the provisioners packer already has really good support for. The result is an intermediate image format (squashfs) that can be easily applied to any target.
-
-FILES
------
-
-*./linecook.yml*
-  Local config file. Gets deep merged over the system config file. If not explicitly specified, found from current directory if exists.
-
-*~/linecook/config.yml*
-  The system wide configuration file, base or 'common' configuration. Other configurations get deep merged on top of this.
 
 DEPENDENCIES
 -----
 
 Ruby 2.0 or greater, gem, and bundler.
 
-Does not work and will never work on Windows.
 
 ### Linux
-
-Only tested on Gentoo and Ubuntu
-
-* lxc >= 1.0.7
-* brutils
-* dnsmasq
-* iptables with masquerade support
-* Linux 3.19 or greater with support for cgroups, and netfilter as described by lxc and iptables for NAT.
 
 
 ### OS X
 
-* OS X 10.10 or later (Hypervisor.framework required for Xhyve)
 
 QUIRKS
 -----------
 
-### Xhyve
-
-+ Xhyve requires root privileges until https://github.com/mist64/xhyve/issues/60 is resolved. Linecook will setuid on the xhyve binary.
-
-### Overlayfs
-
-+ Overlayfs doesn't support unix domain sockets (yet), so anything using a unix domain socket outside of the /run tree should do manually symlink to /run.
-+ Config file will allow you to explicitly mount tmpfs over things that don't do /run if you need to create unix domain sockets
 
 BUGS
 ----
 
-Report bugs against github.com/dalehamel/linecook
+Report bugs against github.com/shopify/linecook-gem
 
 AUTHOR
 ------
 
-Dale Hamel <dale.hamel@srvthe.net>
+Dale Hamel <dale.hamel@shopify.com>
