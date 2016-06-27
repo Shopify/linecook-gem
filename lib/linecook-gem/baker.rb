@@ -44,6 +44,7 @@ module Linecook
           puts "Preserving build #{@image.id}, you will need to clean it up manually."
         else
           puts "Cleaning up build #{@image.id}"
+          FileUtils.rm_f(@directory, '.kitchen', "#{@driver.instance.name}.yml")
           @driver.instance.destroy
         end
       end
