@@ -1,139 +1,170 @@
-.TH LINECOOK 1 "December 2015" Unix "User Manuals"
+.TH LINECOOK 1 "June 2016" Unix "User Manuals"
 .SH NAME
 .PP
-linecook \- Linux system image builder
+linecook \- Linux system image builder based on test kitchen
 .SH SYNOPSIS
-.PP
-linecook setup \- interactive setup
 .PP
 linecook help [\fB\fCCOMMAND\fR]\- for specific command help
 .SH DESCRIPTION
 .PP
-Linecook builds system images utilizing overlayfs, squashfs, and linux containers via LXC. Currently, linecook only natively supports chef for provisioning, but using packer with a null resource, any of the mechanisms supported by packer are also supported by linecook.
+Linecook is a workflow tool that allows you to use test kitchen to build generic system images. Linecook works with arbitrary test\-kitchen provisioners, and generations a neutral format that can be packaged into specific output formats.
 .PP
-Linecook is intended to serve 3 main purposes:
+Currently, linecook supports the following test kitchen drivers:
 .RS
 .IP \(bu 2
-Providing a simple, portable image building process that is useable both in baremetal and cloud deployments.
-.IP \(bu 2
-Enabling a means of simple local image development with high production efficacy on Linux and OS X.
-.IP \(bu 2
-Simplifying continuous integration and testing of linux systems.
+kitchen\-docker
 .RE
+.PP
+And linecook uses packer to generate output. It currently supports:
+.RS
+.IP \(bu 2
+AMIs via packer's ebs_chroot builder.
+.RS
+.IP \(bu 2
+The amis may also update a TXT record in a route53 zone once the build is complete
+.RE
+.IP \(bu 2
+squashfs, a provider neutral format.
+.RE
+.PP
+Linecook builds may be saved and annotated according to the folliwng convention:
+.RS
+.IP \(bu 2
+name \- a descriptive name for the build, based on the name of the test kitchen suite.
+.IP \(bu 2
+group \- an arbitrary grouping of suites, intended to group builds by branches.
+.IP \(bu 2
+tag \- a numeric tag for a build, intended to increment. If 'latest' is specified when resolving a build, the latest uploaded build is used.
+.RE
+.PP
+These three attributes are composed to make a build id in a very simple manor:
+.RS
+.IP \(bu 2
+name is always required
+.IP \(bu 2
+if group is specified, it will be joined with name using a '\-' character.
+.IP \(bu 2
+if tag is specified, it will be joined with the name and the gorup using a '\-' character.
+.IP \(bu 2
+For example, the resulting id for a base build on the master group, with id of '5' would be 'base\-master\-5'. If this is the latest build for the base\-master group, 'base\-master\-latest' will resolve to this.
+.RE
+.PP
+If linecook uploads a build, it will always encrypt it using rbnacl.
 .SH USAGE
+.PP
+To test linecook builds locally, it is best to use test kitchen directly:
 .PP
 .RS
 .nf
-linecook bake SPEC [\-n \-\-name `NAME`] [\-s \-\-snapshot]
-  \-\-name \- The name
-  \-\-snapshot \- Snapshot the resulting image for later use
-  \-\-encrypt \- Encrypt the snapshot using the configured key. Implies snapshot.
-  \-\-upload \- Upload the resulting image to the configured destination. Implies snapshot.
-  \-\-all \- Snapshot, encrypt, and upload the resulting image.
-  Build a linecook image defined by SPEC, with an optional name to help identify it. The default will be the SPEC name
-linecook builder
-  start \- start a new builder
-  stop \- stop a running builder
-  info \- show the info about the builder
-  ip \- show the builder's ip
-linecook config
-  setup
-  check \- validate config
-  show
-linecook build
-  list
-  info NAME
-  ip NAME
-  stop NAME
-linecook image
-  list
-  keygen \- generate a new secret key for image encryption
-  fetch
-  find [`REGEX`] \- list available remote images filtered by an optional regex
-linecook ami [`image`] [\-r \-\-region `REGION1,REGION2`] [\-x \-\-xen\-type `PV|HVM`] [\-r \-\-root\-size GIGABYTES] \- create an AMI (Amazon Machine Image) from a snapshot.
+bundle exec kitchen converge [SUITE NAME]
 .fi
 .RE
+.PP
+For more specific usage, use \fIlinecook help\fP
 .SH CONFIGURATION
 .PP
-Describe config file here once it's been determined
+See test kitchen's documentation for configuring suites and provisioners.
+.SH KITCHEN EXTENSIONS
+.PP
+kitchen.yml is extended to support the following additional attributes:
+.TP
+\fBinherit\fP
+Inherit from a previous linecook build. This saves time if there are several builds based on the same ancestor.
+.RS
+.IP \(bu 2
+name \- the name of the build to inherit
+.IP \(bu 2
+group \- the group / branch of the build to inherit
+.IP \(bu 2
+tag \- the explicit tag, or 'latest' to discovery the latest tag.
+.RE
+.SH PACKAGER
+.PP
+Right now there are two packagers supported. The interface may change.
+.TP
+\fBsquashfs\fP
+Package the resulting build as a squashfs image.
+.RS
+.IP \(bu 2
+\fIexcludes\fP \- a list of glob expressions to exclude from the archive
+.IP \(bu 2
+\fIdistro\fP \- inherit a specific set of presets for paths to exclude by distro. Currently only ubuntu is supported.
+.IP \(bu 2
+outdir \- the output directory for the image
+.RE
+.TP
+\fBpacker\fP
+Package an AMI using packer. Currently only AMIs are supported, but any packer builder could be implemented relatively easily.
+.RS
+.IP \(bu 2
+hvm \- build an HVM instance (defaults to true).
+.IP \(bu 2
+root_size \- the size of the root volume to snapshot for the AMI (in GB).
+.IP \(bu 2
+region \- the region to build the AMI in.
+.IP \(bu 2
+copy_regions \- additional regions to copy the AMI to.
+.IP \(bu 2
+account_ids \- a list of account ids that are permitted to launch this AMI.
+.IP \(bu 2
+ami \- details for storing the AMI ID in a DNS TXT record on route53.
+.RS
+.IP \(bu 2
+update_txt \- should a TXT record be written? (true or false)
+.IP \(bu 2
+regions \- a dictionary of regional aliases
+.IP \(bu 2
+domain \- the route53 domain to write to
+.IP \(bu 2
+zone \- the zone within the domain.
+.RE
+.RE
+.SH SECRETS
+.PP
+Linecook will look for secrets in config.ejson. In particular:
+.TP
+\fBimagekey\fP
+the key to use when encrypting images. Generate one with the \fIimage keygen\fP command.
+.TP
+\fBaws\fP
+This is used access to S3, as well as to create EBS based AMIs and update TXT records on route53. A sample IAM policy is provided in the github repo.
+.RS
+.IP \(bu 2
+{ "s3": { "bucket" : "name" } } can be used to set the name of the bucket
+.IP \(bu 2
+{ "access_key" : "ACCESS_KEY" } can be used to set the access key for the IAM user associated with the profile with the necessary access.
+.IP \(bu 2
+{ "secret_key" : "ACCESS_KEY" } can be used to set the secret key for the IAM user associated with the profile with the necessary access.
+.RE
+.TP
+\fBchef\fP
+To decrypt data bags securely, you can set the \fIencrypted_data_bag_secret\fP here. Make sure any newlines are replaced with \[rs]n.
 .SH PROVISIONERS
 .PP
-Linecook includes an embedded chef\-zero server, and uses the chef\-provisioner
-\[la]https://rubygems.org/gems/chef-provisioner\[ra] and chefdepartie
-\[la]https://rubygems.org/gems/chefdepartie\[ra] gems to have first\-class support for local chef\-zero builds.
-.PP
-However, if you're not using chef or don't want to use chef\-zero, linecook can be used seamlessly with packer
-\[la]https://www.packer.io\[ra], and supports any of the Linux\-based provisioners. This includes:
-.RS
-.IP \(bu 2
-Chef\-solo
-.IP \(bu 2
-Chef\-client (with a real chef server)
-.IP \(bu 2
-Ansible
-.IP \(bu 2
-Puppet (masterless or server)
-.IP \(bu 2
-Salt
-.IP \(bu 2
-Plain old shell scripts
-.RE
-.PP
-See the packer documentation for how to configure these provisioners.
-.PP
-To use a packerfile with linecook, just leave out the 'builder' section, or have the builder section be an empty array. You need only specify the 'provisioner' section, and other sections may cause errors. Linecook will automatically insert a null builder with the appropriate connection string for you.
-.PP
-Linecook with packer is a powerful combination, as it allows you to leverage packer's 'null builder' to take advantage of all of the provisioners packer already has really good support for. The result is an intermediate image format (squashfs) that can be easily applied to any target.
-.SH FILES
-.TP
-\fI\&./linecook.yml\fP
-Local config file. Gets deep merged over the system config file. If not explicitly specified, found from current directory if exists.
-.TP
-\fI~/linecook/config.yml\fP
-The system wide configuration file, base or 'common' configuration. Other configurations get deep merged on top of this.
+Currently only the docker driver is supported for provisioning. You must have docker installed to use this provisioner.
 .SH DEPENDENCIES
 .PP
+\fBCommon\fP
+.RS
+.IP \(bu 2
 Ruby 2.0 or greater, gem, and bundler.
+.RE
 .PP
-Does not work and will never work on Windows.
-.SS Linux
+\fBLinux\fP
+.RS
+.IP \(bu 2
+mksquashfs \- to generate squashfs output.
+.RE
 .PP
-Only tested on Gentoo and Ubuntu
+\fBOS X\fP
 .RS
 .IP \(bu 2
-lxc >= 1.0.7
-.IP \(bu 2
-brutils
-.IP \(bu 2
-dnsmasq
-.IP \(bu 2
-iptables with masquerade support
-.IP \(bu 2
-Linux 3.19 or greater with support for cgroups, and netfilter as described by lxc and iptables for NAT.
-.RE
-.SS OS X
-.RS
-.IP \(bu 2
-OS X 10.10 or later (Hypervisor.framework required for Xhyve)
-.RE
-.SH QUIRKS
-.SS Xhyve
-.RS
-.IP \(bu 2
-Xhyve requires root privileges until 
-\[la]https://github.com/mist64/xhyve/issues/60\[ra] is resolved. Linecook will setuid on the xhyve binary.
-.RE
-.SS Overlayfs
-.RS
-.IP \(bu 2
-Overlayfs doesn't support unix domain sockets (yet), so anything using a unix domain socket outside of the /run tree should do manually symlink to /run.
-.IP \(bu 2
-Config file will allow you to explicitly mount tmpfs over things that don't do /run if you need to create unix domain sockets
+docker for mac
 .RE
 .SH BUGS
 .PP
-Report bugs against github.com/dalehamel/linecook
+Report bugs against github.com/shopify/linecook\-gem
 .SH AUTHOR
 .PP
 Dale Hamel 
-\[la]dale.hamel@srvthe.net\[ra]
+\[la]dale.hamel@shopify.com\[ra]
