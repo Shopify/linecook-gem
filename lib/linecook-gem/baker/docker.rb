@@ -77,7 +77,7 @@ module Linecook
           puts "Removing #{id}"
           begin
             old.remove(force: true)
-          rescue Docker::Error::ConflictError => e
+          rescue ::Docker::Error::ConflictError => e
             puts "Failed to remove #{id}"
             puts e.message
           end
