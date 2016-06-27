@@ -95,4 +95,9 @@ class Linecook::CLI < Thor
     system("man #{path}")
   end
 
+  desc 'version', 'Print the current version'
+  def version
+    puts Linecook::VERSION
+  end
+
 end
