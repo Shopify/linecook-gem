@@ -73,15 +73,25 @@ module Linecook
       def clean_older_images(image)
         puts "Cleaning up older images for #{image.group}..."
         older_images(image).each do |old|
-          id = old.info['RepoTags'].first
-          puts "Removing #{id}"
-          begin
-            old.remove(force: true)
-          rescue ::Docker::Error::ConflictError => e
-            puts "Failed to remove #{id}"
-            puts e.message
+          children(old).each do |child|
+            remove_docker_image(child)
           end
+          remove_docker_image(old)
         end
+      end
+
+      def remove_docker_image(docker_image)
+        puts "Removing #{docker_image.id}"
+        docker_image.remove(force: false)
+      rescue ::Docker::Error::ConflictError => e
+        puts "Failed to remove #{docker_image.id}"
+        puts e.message
+      end
+
+      def children(parent_image)
+        ::Docker::Image.all.select do |docker_image|
+          docker_image.info['ParentId'] == parent_image.id
+        end.compact
       end
 
       def older_images(image)
