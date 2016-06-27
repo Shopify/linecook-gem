@@ -73,8 +73,14 @@ module Linecook
       def clean_older_images(image)
         puts "Cleaning up older images for #{image.group}..."
         older_images(image).each do |old|
-          puts "Removing #{old.info['RepoTags'].first}"
-          old.remove(force: true)
+          id = old.info['RepoTags'].first
+          puts "Removing #{id}"
+          begin
+            old.remove(force: true)
+          rescue Docker::Error::ConflictError => e
+            puts "Failed to remove #{id}"
+            puts e.message
+          end
         end
       end
 
