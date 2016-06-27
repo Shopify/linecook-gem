@@ -64,12 +64,6 @@ module Linecook
       provider.latest(@group)
     end
 
-    #def snapshot(source_path)
-    #  FileUtils.mkdir_p(File.dirname(@path))
-      #system("sudo mksquashfs #{source_path} #{@path} -noappend -wildcards -e 'dev/*' 'sys/*' 'proc/*' 'run/*' 'tmp/*' 'home/kitchen' 'etc/sudoers.d/kitchen' '.docker*' 'usr/src' 'var/lib/apt/lists/archive*' 'var/cache/apt/archives'") # FIXME make these excludes dynamic based on OS
-
-    #end
-
   private
 
     def image_path

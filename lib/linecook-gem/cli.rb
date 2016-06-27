@@ -3,6 +3,12 @@ require 'linecook-gem'
 
 class Image < Thor
 
+  desc 'keygen', 'Generate a new encryption key'
+  def keygen
+    puts Linecook::Crypto.keygen
+  end
+
+
   desc 'list', 'List images'
   def list
     puts Linecook::Image.new(nil, nil, nil).list
@@ -32,10 +38,11 @@ class Image < Thor
   method_option :name, type: :string, required: true, banner: 'NAME', desc: 'Name of the image to package.', aliases: '-n'
   method_option :tag, type: :string, default: 'latest', banner: 'NAME', desc: 'Tag of the image to package.', aliases: '-t'
   method_option :group, type: :string, required: false, banner: 'ID', desc: 'Group of image to package', aliases: '-g'
+  method_option :strategy, type: :string, default: 'packer', banner: 'STRATEGY', enum: ['packer', 'squashfs'], desc: 'Packaging strategy', aliases: '-s'
   def package
     opts = options.symbolize_keys
     image = Linecook::Image.new(opts[:name], opts[:group], opts[:tag])
-    Linecook::Packager.package(image)
+    Linecook::Packager.package(image, name: opts[:strategy])
   end
 
   desc 'save', 'Save running build'
@@ -81,4 +88,11 @@ class Linecook::CLI < Thor
     baker = Linecook::Baker::Baker.new(image, directory: opts[:directory])
     baker.clean_kitchen
   end
+
+  desc 'man', 'Show the manpage'
+  def man
+    path = File.join(Gem::Specification.find_by_name('linecook-gem').gem_dir, 'man', 'LINECOOK.1' )
+    system("man #{path}")
+  end
+
 end

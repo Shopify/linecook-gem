@@ -50,7 +50,7 @@ To test linecook builds locally, it is best to use test kitchen directly:
 bundle exec kitchen converge [SUITE NAME]
 ```
 
-Linecook uses 
+For more specific usage, use *linecook help*
 
 
 CONFIGURATION
@@ -58,9 +58,73 @@ CONFIGURATION
 
 See test kitchen's documentation for configuring suites and provisioners.
 
-Linecook supports configuration of packagers, but this is not yet documented as it may change. For now, just read the source code.
+KITCHEN EXTENSIONS
+------------------
 
-Linecook will look for secrets in config.ejson
+kitchen.yml is extended to support the following additional attributes:
+
+**inherit**
+  Inherit from a previous linecook build. This saves time if there are several builds based on the same ancestor.
+
+  * name - the name of the build to inherit
+  * group - the group / branch of the build to inherit
+  * tag - the explicit tag, or 'latest' to discovery the latest tag.
+
+PACKAGER
+--------
+
+Right now there are two packagers supported. The interface may change.
+
+**squashfs**
+  Package the resulting build as a squashfs image.
+
+  * *excludes* - a list of glob expressions to exclude from the archive
+
+  * *distro* - inherit a specific set of presets for paths to exclude by distro. Currently only ubuntu is supported.
+
+  * outdir - the output directory for the image
+
+**packer**
+  Package an AMI using packer. Currently only AMIs are supported, but any packer builder could be implemented relatively easily.
+
+  * hvm - build an HVM instance (defaults to true).
+
+  * root\_size - the size of the root volume to snapshot for the AMI (in GB).
+
+  * region - the region to build the AMI in.
+
+  * copy\_regions - additional regions to copy the AMI to.
+
+  * account\_ids - a list of account ids that are permitted to launch this AMI.
+
+  * ami - details for storing the AMI ID in a DNS TXT record on route53.
+
+    * update\_txt - should a TXT record be written? (true or false)
+    * regions - a dictionary of regional aliases
+    * domain - the route53 domain to write to
+    * zone - the zone within the domain.
+
+SECRETS
+-------
+
+Linecook will look for secrets in config.ejson. In particular:
+
+**imagekey**
+  the key to use when encrypting images. Generate one with the *image keygen* command.
+
+
+**aws**
+  This is used access to S3, as well as to create EBS based AMIs and update TXT records on route53. A sample IAM policy is provided in the github repo.
+
+  * { "s3": { "bucket" : "name" } } can be used to set the name of the bucket
+
+  * { "access\_key" : "ACCESS\_KEY" } can be used to set the access key for the IAM user associated with the profile with the necessary access.
+
+  * { "secret\_key" : "ACCESS\_KEY" } can be used to set the secret key for the IAM user associated with the profile with the necessary access.
+
+**chef**
+  To decrypt data bags securely, you can set the *encrypted\_data\_bag\_secret* here. Make sure any newlines are replaced with \n.
+
 
 PROVISIONERS
 ------------
@@ -71,18 +135,17 @@ Currently only the docker driver is supported for provisioning. You must have do
 DEPENDENCIES
 -----
 
-Ruby 2.0 or greater, gem, and bundler.
+**Common**
 
+* Ruby 2.0 or greater, gem, and bundler.
 
-### Linux
+**Linux**
 
+* mksquashfs - to generate squashfs output.
 
-### OS X
+**OS X**
 
-
-QUIRKS
------------
-
+* docker for mac
 
 BUGS
 ----
