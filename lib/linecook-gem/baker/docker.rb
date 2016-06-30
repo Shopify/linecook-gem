@@ -34,8 +34,8 @@ module Linecook
       end
 
       def destroy
-        instance.destroy
         container.delete(force: true)
+        instance.destroy
       rescue ::Docker::Error::NotFoundError => e
         puts e.message
       end
