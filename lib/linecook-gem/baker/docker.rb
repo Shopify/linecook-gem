@@ -1,4 +1,3 @@
-require 'open3'
 require 'tmpdir'
 require 'fileutils'
 
@@ -21,17 +20,8 @@ module Linecook
 
 
       def save
-        container.stop
         FileUtils.mkdir_p(File.dirname(@image.path))
-        pipe, _, _, _ = Open3.popen3("xz -T 0 -0 > #{@image.path}")
-
-        container.export do |chunk|
-          pipe.write(chunk)
-        end
-
-        pipe.flush
-        pipe.close
-        container.start
+        system("docker export #{@image.id} | xz -T 0 -0 > #{@image.path}")
       end
 
       def instance
@@ -104,11 +94,7 @@ module Linecook
       def import(image)
         puts "Importing #{image.id}..."
         image.fetch
-        open(image.path) do |io|
-          ::Docker::Image.import_stream(repo: image.group, tag: image.tag, changes: ['CMD ["/sbin/init"]']) do
-            io.read(Excon.defaults[:chunk_size] * 10 ) || ""
-          end
-        end
+        system("docker import -c 'CMD [\"/sbin/init\"]' #{image.path} #{image.group}:#{image.tag}")
       end
 
 
