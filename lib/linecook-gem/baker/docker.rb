@@ -96,7 +96,11 @@ module Linecook
       def import(image)
         puts "Importing #{image.id}..."
         image.fetch
-        system('docker import -c "CMD [/sbin/init]"' + " " + "#{image.path} #{image.group}:#{image.tag}")
+        open(image.path) do |io|
+          ::Docker::Image.import_stream(repo: image.group, tag: image.tag, changes: ['CMD ["/sbin/init"]']) do
+            io.read(Excon.defaults[:chunk_size] * 10 ) || ""
+          end
+        end
       end
 
 
