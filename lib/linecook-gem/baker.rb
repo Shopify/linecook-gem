@@ -44,7 +44,7 @@ module Linecook
           puts "Preserving build #{@image.id}, you will need to clean it up manually."
         else
           puts "Cleaning up build #{@image.id}"
-          @driver.instance.destroy
+          @driver.destroy
         end
       end
 
@@ -65,6 +65,7 @@ module Linecook
     private
 
       def clean
+        @driver.exec('rm -f /.docker*')
         if @is_chef
           @driver.exec('userdel -r -f kitchen')
           @driver.exec('groupdel kitchen')

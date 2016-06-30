@@ -21,6 +21,7 @@ module Linecook
 
       def save
         FileUtils.mkdir_p(File.dirname(@image.path))
+        container.stop
         system("docker export #{@image.id} | xz -T 0 -0 > #{@image.path}")
       end
 
@@ -32,7 +33,8 @@ module Linecook
         instance.converge
       end
 
-      def stop
+      def destroy
+        instance.destroy
         container.delete(force: true)
       rescue ::Docker::Error::NotFoundError => e
         puts e.message
@@ -94,7 +96,7 @@ module Linecook
       def import(image)
         puts "Importing #{image.id}..."
         image.fetch
-        system("docker import -c 'CMD [\"/sbin/init\"]' #{image.path} #{image.group}:#{image.tag}")
+        system('docker import -c "CMD [/sbin/init]"' + " " + "#{image.path} #{image.group}:#{image.tag}")
       end
 
 
