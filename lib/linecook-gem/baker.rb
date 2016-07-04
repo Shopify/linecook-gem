@@ -36,6 +36,12 @@ module Linecook
         end
 
       rescue => e
+        if e.cause
+          puts "Original cause of exception:"
+          puts e.cause.message
+          puts e.cause.backtrace
+        end
+
         puts e.message
         puts e.backtrace
         raise
