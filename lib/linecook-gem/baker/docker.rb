@@ -10,6 +10,8 @@ module Linecook
     # FIXME - refactor into a base class with an interface
     class Docker
 
+      RETAIN_IMAGES = 3 # number of latest images to retain
+
       attr_reader :config
 
       def initialize(image, config)
@@ -89,7 +91,7 @@ module Linecook
       def older_images(image)
         ::Docker::Image.all.select do |docker_image|
           group, tag = docker_image.info['RepoTags'].first.split(':')
-          group == image.group && tag.to_i < image.tag.to_i
+          group == image.group && tag.to_i + RETAIN_IMAGES < image.tag.to_i
         end
       end
 
