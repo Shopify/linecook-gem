@@ -75,7 +75,7 @@ module Linecook
       def remove_docker_image(docker_image)
         puts "Removing #{docker_image.id}"
         docker_image.remove(force: false)
-      rescue ::Docker::Error::ConflictError => e
+      rescue ::Docker::Error::ConflictError, ::Docker::Error::NotFoundError => e
         puts "Failed to remove #{docker_image.id}"
         puts e.message
       end
