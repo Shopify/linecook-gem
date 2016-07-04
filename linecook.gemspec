@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk',  ['~> 2.3']
   s.add_runtime_dependency 'rubyzip',  ['1.1.7']
   s.add_runtime_dependency 'rbnacl',  ['~> 3.4.0']
-  s.add_runtime_dependency 'docker-api',  ['1.28.0']
+  s.add_runtime_dependency 'docker-api',  ['~> 1.29.0']
   s.add_runtime_dependency 'test-kitchen',  ['1.9.0']
   s.add_runtime_dependency 'kitchen-sync',  ['~> 2.1']
   s.add_runtime_dependency 'kitchen-docker',  ['~> 2.5.0']

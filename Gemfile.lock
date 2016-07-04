@@ -13,7 +13,7 @@ PATH
     linecook-gem (0.7.10)
       activesupport (= 4.2.5)
       aws-sdk (~> 2.3)
-      docker-api (= 1.28.0)
+      docker-api (~> 1.29.0)
       ejson (= 1.0.1)
       kitchen-docker (~> 2.5.0)
       kitchen-sync (~> 2.1)
@@ -52,7 +52,7 @@ GEM
     colorize (0.7.7)
     diff-lcs (1.2.5)
     docile (1.1.5)
-    docker-api (1.28.0)
+    docker-api (1.29.0)
       excon (>= 0.38.0)
       json
     ejson (1.0.1)
