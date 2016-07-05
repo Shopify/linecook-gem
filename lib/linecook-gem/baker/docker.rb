@@ -5,6 +5,9 @@ require 'docker'
 
 require 'linecook-gem/image'
 
+# Until https://github.com/swipely/docker-api/pull/413 gets merged
+class Excon::Errors::InternalServerError < Excon::Errors::InternalServerErrorError; end
+
 module Linecook
   module Baker
     # FIXME - refactor into a base class with an interface
