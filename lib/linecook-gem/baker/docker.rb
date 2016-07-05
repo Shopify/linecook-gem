@@ -4,6 +4,7 @@ require 'fileutils'
 require 'docker'
 
 require 'linecook-gem/image'
+require 'linecook-gem/util/locking'
 
 # Until https://github.com/swipely/docker-api/pull/413 gets merged
 class Excon::Errors::InternalServerError < Excon::Errors::InternalServerErrorError; end
@@ -12,6 +13,7 @@ module Linecook
   module Baker
     # FIXME - refactor into a base class with an interface
     class Docker
+      include Locking
 
       RETAIN_IMAGES = 3 # number of latest images to retain
 
@@ -99,13 +101,20 @@ module Linecook
       end
 
       def import(image)
-        puts "Importing #{image.id}..."
-        image.fetch
-        open(image.path) do |io|
-          ::Docker::Image.import_stream(repo: image.group, tag: image.tag, changes: ['CMD ["/sbin/init"]']) do
-            io.read(Excon.defaults[:chunk_size] * 10 ) || ""
+        lock("import_#{image.id}")
+        if image_exists?(image)
+          puts "Image #{image.id} has already been imported"
+        else
+          puts "Importing #{image.id}..."
+          image.fetch
+          open(image.path) do |io|
+            ::Docker::Image.import_stream(repo: image.group, tag: image.tag, changes: ['CMD ["/sbin/init"]']) do
+              io.read(Excon.defaults[:chunk_size] * 10 ) || ""
+            end
           end
         end
+      ensure
+        unlock("import_#{image.id}")
       end
 
 

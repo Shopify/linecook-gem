@@ -8,12 +8,14 @@ require 'pty'
 
 require 'linecook-gem/image'
 require 'linecook-gem/util/downloader'
+require 'linecook-gem/util/locking'
 require 'linecook-gem/packager/route53'
 
 module Linecook
   class AmiPacker
 
     include Downloader
+    include Locking
 
     SOURCE_URL = 'https://releases.hashicorp.com/packer/'
     PACKER_VERSION = '0.8.6'
@@ -184,30 +186,6 @@ module Linecook
 
     def free_device?(device)
       !File.exists?("/dev/#{device}") && !File.exists?(lock_path(device))
-    end
-
-    def lock(name)
-      lockfile(name).flock(File::LOCK_EX)
-    end
-
-    def unlock(name)
-      lockfile(name).flock(File::LOCK_UN)
-      lockfile(name).close
-    end
-
-    def clear_lock(name)
-      unlock(name)
-      FileUtils.rm_f(lockfile(name))
-    end
-
-    def lockfile(suffix)
-      @locks ||= {}
-      path = lock_path(suffix)
-      @locks[path] = @locks[path] || File.open(path, File::RDWR|File::CREAT, 0644)
-    end
-
-    def lock_path(suffix)
-      "/tmp/free_device_lock_#{suffix.gsub('/','_')}"
     end
 
     def device_prefix
