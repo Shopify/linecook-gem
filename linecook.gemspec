@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rbnacl', ['~> 3.4', '>= 3.4.0']
   s.add_runtime_dependency 'docker-api', ['~> 1.29', '>= 1.29.0']
   s.add_runtime_dependency 'test-kitchen',  ['1.9.0']
-  s.add_runtime_dependency 'kitchen-sync',  ['~> 2.1']
+  s.add_runtime_dependency 'kitchen-transport-docker',  ['~> 0.0.2', '>= 0.0.0']
   s.add_runtime_dependency 'kitchen-docker', ['~> 2.5', '>= 2.5.0']
   s.add_runtime_dependency 'rbnacl-libsodium', ['~> 1.0', '>= 1.0.0']
   s.add_development_dependency 'rake', ['=10.4.2']
