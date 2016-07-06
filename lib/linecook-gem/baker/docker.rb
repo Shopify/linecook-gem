@@ -55,7 +55,7 @@ module Linecook
       def inherit(image)
         puts "Inheriting from #{image.id}..."
         import(image) unless image_exists?(image)
-        clean_older_images(image)
+        #clean_older_images(image)
       end
 
     private
