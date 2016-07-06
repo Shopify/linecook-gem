@@ -85,6 +85,15 @@ module Linecook
       rescue ::Docker::Error::ConflictError, ::Docker::Error::NotFoundError => e
         puts "Failed to remove #{docker_image.id}"
         puts e.message
+        puts e.backtrace
+      rescue ::Excon::Error::InternalServerError => e
+        puts "Failed to remove #{docker_image.id} (docker internal error)"
+        puts e.message
+        puts e.backtrace
+      rescue => e
+        puts "Something went wrong"
+        puts e.message
+        puts e.backtrace
       end
 
       def children(parent_image)
