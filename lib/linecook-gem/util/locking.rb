@@ -10,7 +10,7 @@ module Linecook
       return unless File.exists?(lock_path(name))
       lockfile(name).flock(File::LOCK_UN)
       lockfile(name).close
-    rescue IOError =>
+    rescue IOError => e
       puts e.message
     end
 
