@@ -34,7 +34,18 @@ module Linecook
       end
 
       def converge
+        if @inherited
+          lock("create_#{@inherited.id}")
+
+          with_retries(3) do
+            instance.create
+          end
+
+          unlock("create_#{@inherited.id}")
+        end
         instance.converge
+      ensure
+        unlock("create_#{@inherited.id}") if @inherited
       end
 
       def destroy
@@ -52,9 +63,26 @@ module Linecook
       def inherit(image)
         puts "Inheriting from #{image.id}..."
         import(image) unless image_exists?(image)
+        @inherited = image
       end
 
     private
+
+      def with_retries(retries, &block)
+        attempts = 0
+        while attempts < retries
+          begin
+            yield
+          rescue => e
+            puts "Retrying a failed action, error was:"
+            puts e.message
+            puts e.backtrace
+          ensure
+            attempts += 1
+          end
+        end
+      end
+
       def container
         @container ||= ::Docker::Container::get(@image.id)
       end
