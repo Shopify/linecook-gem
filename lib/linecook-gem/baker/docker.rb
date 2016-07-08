@@ -6,9 +6,6 @@ require 'docker'
 require 'linecook-gem/image'
 require 'linecook-gem/util/locking'
 
-# Until https://github.com/swipely/docker-api/pull/413 gets merged
-class Excon::Errors::InternalServerError < Excon::Errors::InternalServerErrorError; end
-
 module Linecook
   module Baker
     # FIXME - refactor into a base class with an interface
@@ -55,7 +52,6 @@ module Linecook
       def inherit(image)
         puts "Inheriting from #{image.id}..."
         import(image) unless image_exists?(image)
-        #clean_older_images(image)
       end
 
     private
@@ -64,49 +60,8 @@ module Linecook
       end
 
       def image_exists?(image)
-        ::Docker::Image.all.find do |docker_image|
-          docker_image.info['RepoTags'].first == "#{image.group}:#{image.tag}"
-        end
-      end
-
-      def clean_older_images(image)
-        puts "Cleaning up older images for #{image.group}..."
-        older_images(image).each do |old|
-          children(old).each do |child|
-            remove_docker_image(child)
-          end
-          remove_docker_image(old)
-        end
-      end
-
-      def remove_docker_image(docker_image)
-        puts "Removing #{docker_image.id}"
-        docker_image.remove(force: false)
-      rescue ::Docker::Error::ConflictError, ::Docker::Error::NotFoundError => e
-        puts "Failed to remove #{docker_image.id}"
-        puts e.message
-        puts e.backtrace
-      rescue ::Excon::Error::InternalServerError => e
-        puts "Failed to remove #{docker_image.id} (docker internal error)"
-        puts e.message
-        puts e.backtrace
-      rescue => e
-        puts "Something went wrong"
-        puts e.message
-        puts e.backtrace
-      end
-
-      def children(parent_image)
-        ::Docker::Image.all.select do |docker_image|
-          docker_image.info['ParentId'] == parent_image.id
-        end.compact
-      end
-
-      def older_images(image)
-        ::Docker::Image.all.select do |docker_image|
-          group, tag = docker_image.info['RepoTags'].first.split(':')
-          group == image.group && tag.to_i + RETAIN_IMAGES < image.tag.to_i
-        end
+        images=`docker images --format "{{.Repository}}:{{.Tag}}"`.lines.map(&:strip)
+        images.include?("#{image.group}:#{image.tag}")
       end
 
       def import(image)
