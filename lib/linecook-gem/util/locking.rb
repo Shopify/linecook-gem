@@ -7,8 +7,11 @@ module Linecook
     end
 
     def unlock(name)
+      return unless File.exists?(lock_path(name))
       lockfile(name).flock(File::LOCK_UN)
       lockfile(name).close
+    rescue IOError => e
+      puts e.message
     end
 
     def clear_lock(name)
