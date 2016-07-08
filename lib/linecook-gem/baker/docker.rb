@@ -5,6 +5,7 @@ require 'docker'
 
 require 'linecook-gem/image'
 require 'linecook-gem/util/locking'
+require 'linecook-gem/util/common'
 
 module Linecook
   module Baker
@@ -67,21 +68,6 @@ module Linecook
       end
 
     private
-
-      def with_retries(retries, &block)
-        attempts = 0
-        while attempts < retries
-          begin
-            yield
-          rescue => e
-            puts "Retrying a failed action, error was:"
-            puts e.message
-            puts e.backtrace
-          ensure
-            attempts += 1
-          end
-        end
-      end
 
       def container
         @container ||= ::Docker::Container::get(@image.id)
