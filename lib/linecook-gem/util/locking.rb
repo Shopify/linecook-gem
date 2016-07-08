@@ -10,6 +10,8 @@ module Linecook
       return unless File.exists?(lock_path(name))
       lockfile(name).flock(File::LOCK_UN)
       lockfile(name).close
+    rescue IOError =>
+      puts e.message
     end
 
     def clear_lock(name)
