@@ -1,3 +1,3 @@
 module Linecook
-  VERSION = '0.7.17'
+  VERSION = '0.7.18'
 end
