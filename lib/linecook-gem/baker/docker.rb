@@ -36,13 +36,15 @@ module Linecook
 
       def converge
         if @inherited
-          lock("create_#{@inherited.id}")
-
-          with_retries(3) do
+          begin
             instance.create
+          rescue
+            # Disable the cache and retry if we ran into a problem
+            @data[:driver][:use_cache] = false
+            with_retries(5) do
+              instance.create
+            end
           end
-
-          unlock("create_#{@inherited.id}")
         end
         instance.converge
       ensure
@@ -98,15 +100,15 @@ module Linecook
 
       # May the gods forgive us for all the rules this breaks
       def munge_config
-        data = @config.send(:data).instance_variable_get(:@data)
-        data[:driver][:instance_name] = @image.id
-        suite = data[:suites].find{ |n| n[:name] == @image.name }
+        @data = @config.send(:data).instance_variable_get(:@data)
+        @data[:driver][:instance_name] = @image.id
+        suite = @data[:suites].find{ |n| n[:name] == @image.name }
         if suite && suite[:inherit]
           inherited = Linecook::Image.new(suite[:inherit][:name], suite[:inherit][:group], suite[:inherit][:tag])
           inherit(inherited)
-          data[:driver][:image] = "#{inherited.group}:#{inherited.tag}"
-          data[:driver][:provision_command] ||= []
-          data[:driver][:provision_command] << 'sed -i \'s/\(PasswordAuthentication no\)/#\1/g\' /etc/ssh/sshd_config'
+          @data[:driver][:image] = "#{inherited.group}:#{inherited.tag}"
+          @data[:driver][:provision_command] ||= []
+          @data[:driver][:provision_command] << 'sed -i \'s/\(PasswordAuthentication no\)/#\1/g\' /etc/ssh/sshd_config'
         end
       end
     end

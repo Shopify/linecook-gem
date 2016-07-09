@@ -1,4 +1,4 @@
-def with_retries(retries, &block)
+def with_retries(retries, sleep_duration: 5, &block)
   attempts = 0
   while attempts < retries
     begin
@@ -6,7 +6,7 @@ def with_retries(retries, &block)
     rescue => e
       puts "Retrying a failed action, error was:"
       puts e.message
-      puts e.backtrace
+      sleep sleep_duration
     ensure
       attempts += 1
     end
