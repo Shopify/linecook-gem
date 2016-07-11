@@ -40,6 +40,7 @@ module Linecook
       'umount /dev/{{ user `ebs_device` }}1',
       'mkfs.ext4 /dev/{{ user `ebs_device` }}1',
       'tune2fs -L cloudimg-rootfs /dev/{{ user `ebs_device` }}1',
+      'mkdir -p /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}',
       'mount /dev/{{ user `ebs_device` }}1 /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}',
       'tar -C /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} -xpf {{ user `source_image_path` }}',
       'cp /etc/resolv.conf /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc',
