@@ -28,7 +28,7 @@ module Linecook
         FileUtils.mkdir_p(File.dirname(@image.path))
         container.stop
         with_retries(5) do
-          status = system("docker export #{@image.id} | xz -T 0 -0 > #{@image.path}")
+          system("/bin/bash -c 'docker export #{@image.id} | xz -T 0 -0 > #{@image.path}; exit $((${PIPESTATUS[0]} | ${PIPESTATUS[1]}))'")
           fail "Export failed" unless status
         end
       end
