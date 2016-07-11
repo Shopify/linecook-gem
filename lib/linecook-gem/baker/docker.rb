@@ -27,6 +27,10 @@ module Linecook
       def save
         FileUtils.mkdir_p(File.dirname(@image.path))
         with_retries(5) do
+          # You might be wondering "wtf is this"? And how!
+          # tl;dr, we want to take the bitwise OR of the return codes for everything in the pipe.
+          # so, if any command in the pipe fails, treat the whole pipe to have failed.
+          # otherwise, we could end up with xz compressing an invalid export, and treating it as OK.
           status = system("/bin/bash -c 'docker export #{@image.id} | xz -T 0 -0 > #{@image.path}; exit $((${PIPESTATUS[0]} | ${PIPESTATUS[1]}))'")
           fail "Export failed" unless status
         end
