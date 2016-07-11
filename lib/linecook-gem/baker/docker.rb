@@ -27,7 +27,10 @@ module Linecook
       def save
         FileUtils.mkdir_p(File.dirname(@image.path))
         container.stop
-        system("docker export #{@image.id} | xz -T 0 -0 > #{@image.path}")
+        with_retries(5) do
+          status = system("docker export #{@image.id} | xz -T 0 -0 > #{@image.path}")
+          fail "Export failed" unless status
+        end
       end
 
       def instance
