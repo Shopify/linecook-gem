@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    linecook-gem (0.7.22)
+    linecook-gem (0.7.23)
       activesupport (= 4.2.5)
       aws-sdk (~> 2.3)
       docker-api (~> 1.29, >= 1.29.0)
