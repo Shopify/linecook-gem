@@ -45,8 +45,11 @@ module Linecook
           begin
             instance.create
           rescue
+            puts "Disabling docker cache"
             # Disable the cache and retry if we ran into a problem
-            @data[:driver][:use_cache] = false
+            driver_config = instance.driver.send(:config)
+            driver_config[:use_cache] = false
+
             with_retries(5) do
               instance.create
             end
