@@ -190,7 +190,7 @@ module Linecook
     end
 
     def device_prefix
-      prefixes = ['xvd', 'sd']
+      prefixes = ['xvd']
       `sudo ls -1 /sys/block`.lines.each do |dev| # FIXME
         prefixes.each do |prefix|
           return prefix if dev =~ /^#{prefix}/
