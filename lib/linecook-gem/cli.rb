@@ -10,8 +10,22 @@ class Image < Thor
 
 
   desc 'list', 'List images'
+  method_option :name, type: :string, required: false, banner: 'NAME', desc: 'Name of the image to fetch.', aliases: '-n'
+  method_option :group, type: :string, required: false, banner: 'ID', desc: 'Group of image to list', aliases: '-g'
   def list
-    puts Linecook::Image.new(nil, nil, nil).list
+    opts = options.symbolize_keys
+    image = Linecook::Image.new(opts[:name], opts[:group], nil)
+    puts image.list
+  end
+
+  desc 'clean', 'Cleanup old images'
+  method_option :name, type: :string, required: true, banner: 'NAME', desc: 'Name of the image to fetch.', aliases: '-n'
+  method_option :group, type: :string, required: true, banner: 'ID', desc: 'Group of image to list', aliases: '-g'
+  method_option :retention, type: :numeric, required: false, banner: 'RETENTION', desc: 'Images to keep', aliases: '-k', default: 5
+  def clean
+    opts = options.symbolize_keys
+    image = Linecook::Image.new(opts[:name], opts[:group], nil)
+    puts "Cleaned up #{image.clean(opts[:retention]).length} images"
   end
 
   desc 'fetch', 'Fetch and decrypt an image'

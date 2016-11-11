@@ -64,6 +64,10 @@ module Linecook
       provider.latest(@group)
     end
 
+    def clean(retention)
+      provider.clean(retention, @group)
+    end
+
   private
 
     def image_path

@@ -18,6 +18,17 @@ module Linecook
       list_objects(group: group).map{ |x| x.key if x.key =~ /\.tar\.xz/ }.compact
     end
 
+    def clean(retention, group)
+      full_set = list(group: group)
+      keep = full_set.reverse.take(retention)
+      destroy = full_set - keep
+      destroy.each_slice(1000).each do |garbage|
+        to_destroy = garbage.map { |x| { key: x } }
+        client.delete_objects(bucket: Linecook.config[:aws][:s3][:bucket], delete: { objects: to_destroy} )
+      end
+      return destroy
+    end
+
     def latest(group)
       objects = list_objects(group: group).sort! { |a,b| a.last_modified <=> b.last_modified }
       key = objects.last ? objects.last.key : nil
@@ -48,7 +59,15 @@ module Linecook
   private
 
     def list_objects(group: nil)
-      client.list_objects(bucket: Linecook.config[:aws][:s3][:bucket], prefix: File.join([PREFIX, group].compact)).contents
+      contents = []
+      marker = nil
+      loop do
+        resp = client.list_objects(bucket: Linecook.config[:aws][:s3][:bucket], prefix: File.join([PREFIX, group].compact), marker: marker)
+        break unless resp.contents.last
+        marker = resp.contents.last.key
+        contents += resp.contents
+      end
+      contents.sort { |a,b| a.last_modified <=> b.last_modified }
     end
 
     def client
