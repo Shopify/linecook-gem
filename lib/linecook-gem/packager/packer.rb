@@ -159,6 +159,8 @@ module Linecook
     def get_packer
       puts "packer too old (<#{PACKER_VERSION}) or not present, getting latest packer"
       arch = 1.size == 8 ? 'amd64' : '386'
+
+      FileUtils.rm_f(Dir[File.join(File.dirname(PACKER_PATH), "*")])
       path = File.join(File.dirname(PACKER_PATH), 'packer.zip')
       url = File.join(SOURCE_URL, PACKER_VERSION, "packer_#{PACKER_VERSION}_linux_#{arch}.zip")
       download(url, path)
