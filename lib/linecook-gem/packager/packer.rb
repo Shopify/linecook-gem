@@ -18,7 +18,7 @@ module Linecook
     include Locking
 
     SOURCE_URL = 'https://releases.hashicorp.com/packer/'
-    PACKER_VERSION = '0.8.6'
+    PACKER_VERSION = '0.12.0'
     PACKER_PATH = File.join(Linecook::Config::LINECOOK_HOME, 'bin', 'packer')
 
     BUILDER_CONFIG = {
