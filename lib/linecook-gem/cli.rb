@@ -50,13 +50,14 @@ class Image < Thor
 
   desc 'package', 'Package image'
   method_option :name, type: :string, required: true, banner: 'NAME', desc: 'Name of the image to package.', aliases: '-n'
+  method_option :directory, type: :string, required: false, banner: 'DIR', desc: 'Directory containing kitchen files', aliases: '-d'
   method_option :tag, type: :string, default: 'latest', banner: 'NAME', desc: 'Tag of the image to package.', aliases: '-t'
   method_option :group, type: :string, required: false, banner: 'ID', desc: 'Group of image to package', aliases: '-g'
   method_option :strategy, type: :string, default: 'packer', banner: 'STRATEGY', enum: ['packer', 'squashfs'], desc: 'Packaging strategy', aliases: '-s'
   def package
     opts = options.symbolize_keys
     image = Linecook::Image.new(opts[:name], opts[:group], opts[:tag])
-    Linecook::Packager.package(image, name: opts[:strategy])
+    Linecook::Packager.package(image, name: opts[:strategy], directory: opts[:directory])
   end
 
   desc 'save', 'Save running build'

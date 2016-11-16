@@ -9,9 +9,9 @@ module Linecook
   module Packager
     extend self
 
-    def package(image, name: 'packer')
+    def package(image, name: 'packer', directory: nil)
       image.fetch
-      provider(name.to_sym).package(image)
+      provider(name.to_sym).package(image, directory)
     end
 
   private
