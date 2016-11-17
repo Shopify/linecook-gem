@@ -4,6 +4,7 @@ require 'kitchen'
 require 'kitchen/command/test'
 
 require 'linecook-gem/image'
+require 'linecook-gem/util/common'
 require 'linecook-gem/baker/docker'
 
 module Linecook
@@ -13,12 +14,9 @@ module Linecook
       def initialize(image, directory: nil)
         @directory = File.expand_path(directory || Dir.pwd)
         @image = image
-
-        Dir.chdir(@directory) do
-          load_config
-          munge_config
-          @driver = driver
-        end
+        @config = load_config
+        munge_config
+        @driver = driver
 
       end
 
@@ -78,21 +76,6 @@ module Linecook
           @driver.exec('rm -rf /etc/chef')
           @driver.exec('rm -rf /tmp/kitchen')
           @driver.exec('rm -f /etc/sudoers.d/kitchen')
-        end
-      end
-
-      def load_config
-        @config ||= begin
-
-          Kitchen::Config.new(
-            kitchen_root: @directory,
-            loader: Kitchen::Loader::YAML.new(
-              project_config: ENV['KITCHEN_YAML'] || File.join(@directory, '.kitchen.yml'),
-              local_config: ENV['KITCHEN_LOCAL_YAML'],
-              global_config: ENV['KITCHEN_GLOBAL_YAML']
-            )
-          )
-
         end
       end
 

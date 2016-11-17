@@ -9,6 +9,7 @@ require 'pty'
 require 'linecook-gem/image'
 require 'linecook-gem/util/downloader'
 require 'linecook-gem/util/locking'
+require 'linecook-gem/util/common'
 require 'linecook-gem/packager/route53'
 
 module Linecook
@@ -21,44 +22,44 @@ module Linecook
     PACKER_VERSION = '0.12.0'
     PACKER_PATH = File.join(Linecook::Config::LINECOOK_HOME, 'bin', 'packer')
 
+    PRE_MOUNT_COMMANDS = [
+      'parted -s {{.Device}} mklabel msdos',
+      'parted -s {{.Device}} mkpart primary ext2 0% 100%',
+      'mkfs.ext4 {{.Device}}1',
+      'tune2fs -L cloudimg-rootfs {{.Device}}1',
+    ]
+
+    POST_MOUNT_COMMANDS = [
+      'tar -C {{.MountPath}} -xpf {{ user `source_image_path` }}',
+      'cp /etc/resolv.conf {{.MountPath}}/etc',
+      'echo "LABEL=cloudimg-rootfs   /        ext4   defaults,discard        0 0" > {{.MountPath}}/etc/fstab',
+      'grub-install --root-directory={{.MountPath}} {{.Device}}',
+      'rm -rf {{.MountPath}}/etc/network',
+      'cp -r /etc/network {{.MountPath}}/etc/',
+    ]
+
+    ROOT_DEVICE_MAP = {
+      device_name: 'xvda',
+      delete_on_termination: true
+    }
+
     BUILDER_CONFIG = {
       type: 'amazon-chroot',
       access_key: '{{ user `aws_access_key` }}',
       secret_key: '{{ user `aws_secret_key` }}',
-      source_ami: "{{user `source_ami`}}",
       ami_name: 'packer-image.{{ user `image_name` }} {{timestamp}}',
-      device_path: '/dev/{{ user `ebs_device` }}'
+      from_scratch: true,
+      root_device_name: ROOT_DEVICE_MAP[:device_name],
+      ami_block_device_mappings: [ ROOT_DEVICE_MAP ],
+      pre_mount_commands: PRE_MOUNT_COMMANDS,
+      post_mount_commands: POST_MOUNT_COMMANDS,
     }.freeze
 
-    PROVISIONER_COMMANDS = [
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/proc/sys/fs/binfmt_misc',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/proc',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/sys',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/dev/pts',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/dev',
-      'mv /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc/network /tmp/{{ user `ebs_device`}}-network',
-      'umount /dev/{{ user `ebs_device` }}1',
-      'mkfs.ext4 /dev/{{ user `ebs_device` }}1',
-      'tune2fs -L cloudimg-rootfs /dev/{{ user `ebs_device` }}1',
-      'mkdir -p /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}',
-      'mount /dev/{{ user `ebs_device` }}1 /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}',
-      'tar -C /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} -xpf {{ user `source_image_path` }}',
-      'cp /etc/resolv.conf /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc',
-      'echo "LABEL=cloudimg-rootfs   /        ext4   defaults,discard        0 0" > /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc/fstab',
-      'mount -t proc none /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/proc',
-      'mount -o bind /sys /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/sys',
-      'mount -o bind /dev /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/dev',
-      # Sadly we need to install grub inside the image, and this implementation is Ubunut specific. This can be patched eventually when needed
-      'chroot /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} apt-get update',
-      'chroot /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2',
-      'chroot /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} update-grub',
-      'grub-install --root-directory=/mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }} /dev/{{ user `ebs_device` }}',
-      'rm -rf /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc/network',
-      'mv /tmp/{{ user `ebs_device`}}-network /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc/network',
-      'rm -f /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/etc/init/fake-container-events.conf', # HACK
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/proc',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/sys',
-      'umount /mnt/packer-amazon-chroot-volumes/{{ user `ebs_device` }}/dev'
+    CHROOT_COMMANDS = [
+      'apt-get update',
+      'apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2',
+      'update-grub',
+      'rm -f /etc/init/fake-container-events.conf', # HACK
     ]
 
     def initialize(config)
@@ -68,14 +69,18 @@ module Linecook
       @region = config[:region] || 'us-east-1'
       @copy_regions = config[:copy_regions] || []
       @accounts = config[:account_ids] || []
-      @source_ami = config[:source_ami] || find_ami
       @write_txt = Linecook.config[:packager] && Linecook.config[:packager][:ami] && Linecook.config[:packager][:ami][:update_txt]
     end
 
-    def package(image)
+    def package(image, directory)
       @image = image
+      kitchen_config = load_config(directory).send(:data).instance_variable_get(:@data)
+      image_config = kitchen_config[:suites].find{ |x| x[:name] == image.name }
+      if image_config && image_config[:packager]
+        packager = image_config[:packager] || {}
+      end
       conf_file = Tempfile.new("#{@image.id}-packer.json")
-      config = generate_config
+      config = generate_config(packager)
       conf_file.write(config)
       conf_file.close
       output = []
@@ -111,13 +116,12 @@ module Linecook
     #    amis = `grep "amazon-ebs,artifact,0,id" packer.log`.chomp.split(',')[5].split('%!(PACKER_COMMA)')
     # route53 TXT record integration
 
-    def generate_config
+    def generate_config(packager)
+      packager ||= {}
       config = {
         variables: {
           aws_access_key: Linecook.config[:aws][:access_key],
           aws_secret_key: Linecook.config[:aws][:secret_key],
-          ebs_device: free_device,
-          source_ami: @source_ami,
           image_name: "linecook-#{@image.id}",
           source_image_path: @image.path
         },
@@ -127,22 +131,24 @@ module Linecook
             ami_regions: @copy_regions,
             ami_virtualization_type: virt_type,
             root_volume_size: @root_size
-          )
+          ).deep_merge(packager[:builder] || {})
         ],
-        provisioners: build_provisioner(PROVISIONER_COMMANDS)
+        provisioners: build_provisioner(CHROOT_COMMANDS)
       }
+
+      unless config[:builders].first[:ami_block_device_mappings].find { |x| x[:device_name] == ROOT_DEVICE_MAP[:device_name] }
+        config[:builders].first[:ami_block_device_mappings].prepend ROOT_DEVICE_MAP
+      end
       JSON.pretty_generate(config)
     end
 
-    def build_provisioner(commands)
-      provisioner = []
-      commands.each do |cmd|
-        provisioner << {
-          type: 'shell-local',
-          command: cmd
+    def build_provisioner(chroot_commands)
+      provisioner = [
+        {
+          type: 'shell',
+          inline: chroot_commands
         }
-      end
-      provisioner
+      ]
     end
 
     def packer_path
@@ -168,39 +174,6 @@ module Linecook
       PACKER_PATH
     end
 
-    def free_device
-      lock('device_scan')
-      free = nil
-      prefix = device_prefix
-      ('f'..'zzz').to_a.each do |suffix|
-        device = "#{prefix}#{suffix}"
-        if free_device?(device)
-          lock(device)
-          at_exit do
-            clear_lock(device)
-          end
-          free = device
-          break
-        end
-      end
-      unlock('device_scan')
-      return free
-    end
-
-    def free_device?(device)
-      !File.exists?("/dev/#{device}") && !File.exists?(lock_path(device))
-    end
-
-    def device_prefix
-      prefixes = ['xvd']
-      `sudo ls -1 /sys/block`.lines.each do |dev| # FIXME
-        prefixes.each do |prefix|
-          return prefix if dev =~ /^#{prefix}/
-        end
-      end
-      return prefixes.first
-    end
-
     def extract_amis_from_output(output)
       amis = output.grep(/amazon-chroot,artifact,0,id/).first.chomp.split(',')[5].split('%!(PACKER_COMMA)')
       amis.each do |info_str|
@@ -216,15 +189,5 @@ module Linecook
       @hvm ? 'hvm' : 'paravirtual'
     end
 
-    def find_ami
-      url = "http://uec-images.ubuntu.com/query/trusty/server/released.current.txt"
-      data = open(url).read.split("\n").map{|l| l.split}.detect do |ary|
-        ary[4] == 'ebs' &&
-          ary[5] == 'amd64' &&
-          ary[6] == @region &&
-          ary.last == virt_type
-      end
-      data[7]
-    end
   end
 end
