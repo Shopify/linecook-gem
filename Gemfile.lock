@@ -10,7 +10,7 @@ GIT
 PATH
   remote: .
   specs:
-    linecook-gem (0.7.29)
+    linecook-gem (0.7.30)
       activesupport (= 4.2.5)
       aws-sdk (~> 2.3)
       docker-api (~> 1.29, >= 1.29.0)
@@ -33,13 +33,13 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     artifactory (2.5.0)
-    aws-sdk (2.6.22)
-      aws-sdk-resources (= 2.6.22)
-    aws-sdk-core (2.6.22)
+    aws-sdk (2.6.23)
+      aws-sdk-resources (= 2.6.23)
+    aws-sdk-core (2.6.23)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.6.22)
-      aws-sdk-core (= 2.6.22)
+    aws-sdk-resources (2.6.23)
+      aws-sdk-core (= 2.6.23)
     aws-sigv4 (1.0.0)
     binman (4.0.0)
       opener (>= 0.1.0, < 1)
