@@ -14,9 +14,11 @@ module Linecook
       def initialize(image, directory: nil)
         @directory = File.expand_path(directory || Dir.pwd)
         @image = image
-        @config = load_config(@directory)
-        munge_config
-        @driver = driver
+        Dir.chdir(@directory) do
+          @config = load_config(@directory)
+          munge_config
+          @driver = driver
+        end
 
       end
 
