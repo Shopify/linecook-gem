@@ -57,7 +57,7 @@ module Linecook
 
     CHROOT_COMMANDS = [
       'apt-get update',
-      'apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2',
+      'DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --force-yes --no-upgrade install grub-pc grub-legacy-ec2',
       'update-grub',
       'rm -f /etc/init/fake-container-events.conf', # HACK
     ]
