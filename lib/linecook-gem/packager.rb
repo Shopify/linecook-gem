@@ -1,6 +1,6 @@
 
 require 'linecook-gem/image'
-require 'linecook-gem/packager/packer'
+require 'linecook-gem/packager/ami'
 require 'linecook-gem/packager/squashfs'
 require 'kitchen/configurable'
 
