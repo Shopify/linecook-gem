@@ -39,7 +39,7 @@ module Linecook
         fid = File.basename(path)
         pbar = ProgressBar.create(title: fid, total: file.size)
         common_opts = { bucket: Linecook.config[:aws][:s3][:bucket], key: File.join([PREFIX, group, fid].compact) }
-        resp = client.create_multipart_upload(storage_class: 'REDUCED_REDUNDANCY', server_side_encryption: 'AES256', **common_opts)
+        resp = client.create_multipart_upload(storage_class: 'STANDARD', server_side_encryption: 'AES256', **common_opts)
         id = resp.upload_id
         part = 0
         total = 0
