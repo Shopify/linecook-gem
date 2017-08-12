@@ -61,7 +61,10 @@ module Linecook
       'update-grub',
       'rm -f /etc/init/fake-container-events.conf', # HACK
       'mkdir -p /run/resolvconf/interface',
-      'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure resolvconf' # re-linkify resolvconf
+      'echo "resolvconf resolvconf/linkify-resolvconf   boolean true" | debconf-set-selections', # write debconf
+      'dpkg-reconfigure -f noninteractive resolvconf', # re-linkify resolvconf
+      'truncate --size 0 /etc/resolv.conf', # clear build resolvconf config
+      'truncate --size 0 /etc/resolvconf/resolv.conf.d/original' # clear build resolvconf config
     ]
 
     def initialize(config)
