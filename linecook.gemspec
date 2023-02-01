@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.homepage    =
     'http://rubygems.org/gems/linecook'
   s.license = 'MIT'
-  s.add_runtime_dependency 'activesupport', ['=4.2.5']
+  s.add_runtime_dependency 'activesupport', '=7.0.4.2'
   s.add_runtime_dependency 'ruby-progressbar', ['~> 1.7']
   s.add_runtime_dependency 'ejson',  ['1.0.1']
   s.add_runtime_dependency 'aws-sdk',  ['~> 2.3']
