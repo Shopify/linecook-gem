@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby-progressbar', ['~> 1.7']
   s.add_runtime_dependency 'ejson',  ['1.0.1']
   s.add_runtime_dependency 'aws-sdk',  ['~> 2.3']
-  s.add_runtime_dependency 'rubyzip',  ['1.1.7']
+  s.add_runtime_dependency 'rubyzip',  '2.3.2'
   s.add_runtime_dependency 'rbnacl', ['~> 3.4', '>= 3.4.0']
   s.add_runtime_dependency 'docker-api', ['~> 1.29', '>= 1.29.0']
   s.add_runtime_dependency 'test-kitchen',  ['1.9.0']
